@@ -65,6 +65,28 @@ label{font-size:12px;color:var(--mut)}
 .mn{position:absolute;right:12px;top:44px;z-index:5;background:var(--card);border:1px solid var(--ln);border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.3);padding:4px}
 .mn button{display:block;width:100%;text-align:left;border:0;background:none;color:var(--tx);padding:10px 12px;white-space:nowrap;font-size:15px}
 .oh.ac{margin-top:12px}
+.si{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}
+.si.ed{cursor:pointer}
+.si .l{min-width:0;flex:1}
+.sc{font-size:12px;color:var(--mut)}
+.sn{font-weight:600;word-break:break-word}
+.sp{text-align:right;font-weight:700;color:var(--ac);white-space:nowrap;font-size:16px}
+.dh{color:var(--tx);font-weight:400;padding:0 2px}
+.un{display:table;margin:7px 0 0 auto;border:1px solid var(--mut);border-radius:99px;padding:1px 10px;font-size:12px;font-weight:400;color:var(--mut)}
+.pe{color:var(--ac);font-size:18px;line-height:1;align-self:center}
+.cg{margin:16px 2px 8px}
+.se label{display:block;margin:8px 0 3px}
+.se>label:first-child{margin-top:0}
+.sg{display:grid;grid-template-columns:90px 1fr;gap:6px}
+.pr{display:grid;grid-template-columns:auto 1fr auto 1fr;gap:8px;align-items:center}
+.pr span{color:var(--mut);font-size:14px}
+.chl{max-height:40vh;overflow:auto;margin-bottom:12px}
+.cho{display:block;width:100%;text-align:left;padding:12px;margin-bottom:6px;background:var(--bg);color:var(--tx);border:1px solid var(--ln);border-radius:10px;font-weight:600;word-break:break-word}
+.pen{color:var(--ac);font-size:22px}
+.pen.on{color:#fff;background:#d98e04;border-radius:8px;padding:2px 9px}
+.cgw.c .cgb{display:none}
+.cgw.c .ar{transform:rotate(-90deg)}
+#svq{margin-bottom:8px}
 .agb{display:inline-flex;align-items:center;background:#d98e04;color:#fff;border-radius:99px;padding:2px 10px 2px 4px;font-size:13px;font-weight:600;margin:4px 0}
 .agb i{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#fff;color:#b36b00;font-style:normal;font-weight:800;font-size:12px;margin-right:6px}
 .fin{background:var(--ac);color:#fff;border:0;border-radius:99px;padding:6px 14px;font-weight:600;font-size:14px}
@@ -81,7 +103,7 @@ label{font-size:12px;color:var(--mut)}
 </head>
 <body>
 <main>
-<div class="tabs"><button class="on" data-t="day">День</button><button data-t="ord">Заказы</button></div>
+<div class="tabs"><button class="on" data-t="day">День</button><button data-t="ord">Заказы</button><button data-t="svc">Услуги</button></div>
 
 <section id="day">
 <div class="card"><h2>Загрузить дневную отчётность</h2>
@@ -94,7 +116,7 @@ label{font-size:12px;color:var(--mut)}
 <div class="card" data-col="d"><h2 class="ch">Вычеты<span class="ar">▾</span></h2><div class="bd"><div id="deds"></div><button class="btn alt" data-add="d">+ Вычет</button></div></div>
 <div class="card" data-col="s"><h2 class="ch">Траты<span class="ar">▾</span></h2><div class="bd"><div id="sps"></div><button class="btn alt" data-add="s">+ Трата</button></div></div>
 <div class="card"><h2>Итоги</h2><div id="sum"></div></div>
-<div class="card"><h2>Отчёт</h2><textarea id="rep" rows="20" readonly></textarea><button class="btn" id="cp">Копировать отчёт</button></div>
+<div class="card" data-col="r"><h2 class="ch">Отчёт<span class="ar">▾</span></h2><div class="bd"><textarea id="rep" rows="20" readonly></textarea><button class="btn" id="cp">Копировать отчёт</button></div></div>
 </section>
 
 <section id="ord" hidden>
@@ -112,14 +134,21 @@ label{font-size:12px;color:var(--mut)}
 <div class="f"><label style="display:flex;gap:8px;align-items:center;font-size:14px;color:var(--tx)"><input type="checkbox" id="ag" style="width:auto;margin:0">Требуется согласование</label></div>
 <div class="f"><label>Статус</label><select id="st"><option value="act">Активный</option><option value="done">Завершил</option><option value="rej">Отказ</option></select></div>
 <div class="f" id="rsw" hidden><label>Причина отказа клиента</label><textarea id="rs" rows="2" placeholder="Почему клиент отказался"></textarea></div>
-<div><label>Сумма услуг, ₽</label><input id="sm" type="number" inputmode="decimal"></div>
-<div><label>Чистая выручка, ₽</label><input id="nt" type="number" inputmode="decimal"></div>
+<div class="f"><label>Сумма услуг, ₽</label><input id="sm" type="number" inputmode="decimal"></div>
 </div>
 <button class="btn" id="ob">Добавить</button></div></div>
 <button class="btn alt" id="fb" style="margin:0 0 10px">Фильтр ▾</button>
 <div class="card" id="fp" hidden><div class="fl" id="ft"><button class="on" data-i="0">Статус</button><button data-i="1">Дата</button><button data-i="2">Выручка</button></div><div class="fl" id="fo" style="margin:0"></div></div>
 <p class="u" id="ot"></p>
 <div id="ol"></div>
+</section>
+<section id="svc" hidden>
+<div class="card"><input id="svq" type="search" placeholder="Поиск по коду, названию, категории" style="margin-bottom:8px">
+<div class="fl" id="svfo" style="margin:0"></div></div>
+<div class="card"><div class="oh" style="margin:0"><h2 style="margin:0">Прейскурант</h2><button class="x pen" id="sve" aria-label="Редактирование">✎</button></div>
+<p class="u" id="svh" hidden style="margin:10px 0 0;font-size:13px">Режим редактирования: выберите услугу, чтобы изменить её, или добавьте новую. Чтобы выйти, нажмите ✎ ещё раз.</p>
+<button class="btn" id="sva" hidden>+ Услуга</button></div>
+<div id="svl"></div>
 </section>
 </main>
 <div class="mdl" id="md" hidden><div class="mb"><h3 id="mt"></h3><p id="mx"></p><div id="mf"></div>
@@ -130,7 +159,7 @@ const $=s=>document.querySelector(s),N=v=>+v||0;
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const iso=()=>new Date().toLocaleDateString('sv-SE');
 const ru=d=>d.split('-').reverse().join('.');
-let S={days:{},orders:[],lp:60,col:{}};
+let S={days:{},orders:[],lp:60,col:{},svc:[],cgc:{}};
 try{const r=JSON.parse(localStorage.getItem('blk1'));if(r)S=Object.assign(S,r)}catch(e){}
 const save=()=>{try{localStorage.setItem('blk1',JSON.stringify(S))}catch(e){}};
 const money=n=>{n=Math.round(n);return (n<0?'-':'')+Math.abs(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.')+'₽'};
@@ -139,7 +168,7 @@ const sgn=n=>(n<0?'':'+')+money(n);
 function ask(o){return new Promise(res=>{
   const m=$('#md'),vals=o.vals||[];
   $('#mt').textContent=o.title;$('#mx').textContent=o.text||'';$('#mx').hidden=!o.text;
-  $('#mf').innerHTML=(o.fields||[]).map((f,i)=>`<label>${esc(f)}</label><input type="number" inputmode="decimal" data-i="${i}" value="${esc(vals[i])}" style="margin-bottom:8px">`).join('');
+  $('#mf').innerHTML=((o.choices||[]).length?`<div class="chl">${o.choices.map((c,i)=>`<button class="cho" data-ch="${i}">${esc(c)}</button>`).join('')}</div>`:'')+(o.fields||[]).map((f,i)=>`<label>${esc(f)}</label><input type="${o.type||'number'}"${o.type?'':' inputmode="decimal"'}${o.list?` list="${o.list}"`:''} data-i="${i}" value="${esc(vals[i])}" style="margin-bottom:8px">`).join('');
   $('#my').textContent=o.yes||'Подтвердить';$('#mn').textContent=o.no||'Отмена';
   const ins=[...m.querySelectorAll('#mf input')];
   const done=v=>{m.hidden=true;m.onclick=null;$('#my').onclick=$('#mn').onclick=null;document.removeEventListener('keydown',kd);res(v)};
@@ -149,7 +178,7 @@ function ask(o){return new Promise(res=>{
   const kd=e=>{if(e.key=='Escape')done(null);else if(e.key=='Enter')ok()};
   document.addEventListener('keydown',kd);
   $('#my').onclick=ok;$('#mn').onclick=()=>done(null);
-  m.onclick=e=>{if(e.target==m)done(null)};
+  m.onclick=e=>{const c=e.target.closest('[data-ch]');if(c){done([o.choices[+c.dataset.ch]]);return}if(e.target==m)done(null)};
   m.hidden=false;if(ins[0])setTimeout(()=>ins[0].focus(),30);
 })}
 
@@ -267,6 +296,7 @@ const fit=t=>{t.style.height='auto';t.style.height=Math.max(t.scrollHeight+2,48)
 const rsShow=()=>{$('#rsw').hidden=$('#st').value!='rej';fit($('#rs'))};
 const geo=a=>(/iPhone|iPad/.test(navigator.userAgent)?'https://maps.apple.com/?q=':'geo:0,0?q=')+encodeURIComponent(a);
 $('#cm').oninput=()=>fit($('#cm'));$('#rs').oninput=()=>fit($('#rs'));$('#st').onchange=rsShow;
+const net=o=>{const a=N(o.sm);return a*(100-pc(a))/100};
 const SV=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 const ICO=SV('<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>'),CHK=SV('<polyline points="5 12 10 17 19 7"/>');
 const cpb=t=>`<button class="cp" data-cp="${esc(t)}" title="Копировать" aria-label="Копировать">${ICO}</button>`;
@@ -290,25 +320,25 @@ function rich(s){
 function oForm(o){
   o=o||{ad:'',dt:iso(),tm:'',cm:'',st:'act',sm:'',nt:''};
   $('#ad').value=o.ad;$('#dt').value=o.dt;$('#tm').value=o.tm;$('#cm').value=o.cm;
-  $('#st').value=o.st;$('#sm').value=o.sm;$('#nt').value=o.nt;$('#rs').value=o.rs||'';$('#ag').checked=!!o.ag;rsShow();fit($('#cm'));
+  $('#st').value=o.st;$('#sm').value=o.sm;$('#rs').value=o.rs||'';$('#ag').checked=!!o.ag;rsShow();fit($('#cm'));
   $('#ob').textContent=eid?'Сохранить':'Добавить';
   $('#oht').textContent=eid?'Редактирование':'Новый заказ';
 }
 function oRender(){
-  const K=x=>x.dt+x.tm,cmp={new:(a,b)=>K(b).localeCompare(K(a)),old:(a,b)=>K(a).localeCompare(K(b)),dsc:(a,b)=>N(b.nt)-N(a.nt),asc:(a,b)=>N(a.nt)-N(b.nt)}[srt];
+  const K=x=>x.dt+x.tm,cmp={new:(a,b)=>K(b).localeCompare(K(a)),old:(a,b)=>K(a).localeCompare(K(b)),dsc:(a,b)=>net(b)-net(a),asc:(a,b)=>net(a)-net(b)}[srt];
   const byRev=srt=='dsc'||srt=='asc';
-  const O=S.orders.filter(o=>(flt=='all'||o.st==flt)&&(!byRev||N(o.nt)!=0)).sort(cmp);
+  const O=S.orders.filter(o=>(flt=='all'||o.st==flt)&&(!byRev||net(o)!=0)).sort(cmp);
   const dn=O.filter(o=>o.st=='done');
-  $('#ot').textContent=`Показано: ${O.length} · завершено: ${dn.length} · услуги ${money(dn.reduce((t,o)=>t+N(o.sm),0))} · чистая ${money(dn.reduce((t,o)=>t+N(o.nt),0))}`;
+  $('#ot').textContent=`Показано: ${O.length} · завершено: ${dn.length} · услуги ${money(dn.reduce((t,o)=>t+N(o.sm),0))} · чистая ${money(dn.reduce((t,o)=>t+net(o),0))}`;
   $('#ol').innerHTML=O.map(o=>`<div class="card">
     <div class="oh"><b>${o.ad?`<a class="ad" href="${geo(o.ad)}">${esc(o.ad)}</a>${cpb(o.ad)}`:'Без адреса'}</b><span class="rt"><button class="b ${o.st}" data-c="${o.id}">${ST[o.st]}</button><button class="x dots" data-m="${o.id}" aria-label="Меню">⋮</button></span></div>
     <div class="mn" hidden><button data-oc="${o.id}">Скопировать данные заказа</button><button data-od="${o.id}">Дублировать карточку заказа</button></div>
     <div class="u">${ru(o.dt)} ${esc(o.tm)}</div>${o.ag?'<div><span class="agb"><i>!</i>согласование</span></div>':''}${o.cm?`<div class="cm">${rich(o.cm)}</div>`:''}${o.st=='rej'?`<div class="rs"><b>Причина отказа:</b> <span class="cm">${rich(o.rs)||'не указана'}</span></div>`:''}
-    <div class="oh${o.st=='done'?' mo':' ac'}">${o.st=='done'?`<span>Услуги <b>${money(N(o.sm))}</b> · Чистая <b style="color:#32CD32">${money(N(o.nt))}</b></span>`:o.st=='act'?`<button class="fin" data-f="${o.id}">✓ Выполнил</button>`:'<span></span>'}
+    <div class="oh${o.st=='done'?' mo':' ac'}">${o.st=='done'?`<span>Услуги <b>${money(N(o.sm))}</b> · Чистая <b style="color:#32CD32">${money(net(o))}</b></span>`:o.st=='act'?`<button class="fin" data-f="${o.id}">✓ Выполнил</button>`:'<span></span>'}
     <span><button class="x" style="color:var(--ac)" data-e="${o.id}">✎</button><button class="x" data-d="${o.id}">×</button></span></div></div>`).join('')||'<p class="u">Заказов пока нет</p>';
 }
 $('#ob').onclick=()=>{
-  const o={id:eid||Date.now(),ad:$('#ad').value.trim(),dt:$('#dt').value||iso(),tm:$('#tm').value,cm:$('#cm').value.trim(),st:$('#st').value,rs:$('#st').value=='rej'?$('#rs').value.trim():'',sm:$('#sm').value,nt:$('#nt').value,ag:$('#ag').checked};
+  const o={id:eid||Date.now(),ad:$('#ad').value.trim(),dt:$('#dt').value||iso(),tm:$('#tm').value,cm:$('#cm').value.trim(),st:$('#st').value,rs:$('#st').value=='rej'?$('#rs').value.trim():'',sm:$('#sm').value,ag:$('#ag').checked};
   if(eid){const i=S.orders.findIndex(x=>x.id==eid);if(i>=0)S.orders[i]=o;else S.orders.push(o)}else S.orders.push(o);
   eid=null;save();oForm();oRender();
 };
@@ -323,8 +353,8 @@ $('#ol').onclick=e=>{
   if(od){const o=S.orders.find(x=>x.id==od.dataset.od);if(o){S.orders.push({...o,id:Date.now()});save();closeMn();oRender()}return}
   const fb=e.target.closest('[data-f]');
   if(fb){const o=S.orders.find(x=>x.id==fb.dataset.f);
-    if(o)ask({title:'Заказ выполнен',text:o.ad||'Без адреса',fields:['Сумма услуг, ₽','Чистая выручка, ₽'],vals:[o.sm,o.nt],yes:'Подтвердить'})
-      .then(v=>{if(v){o.st='done';o.sm=v[0];o.nt=v[1];save();oRender()}});
+    if(o)ask({title:'Заказ выполнен',text:o.ad||'Без адреса',fields:['Сумма услуг, ₽'],vals:[o.sm],yes:'Подтвердить'})
+      .then(v=>{if(v){o.st='done';o.sm=v[0];save();oRender()}});
     return}
   const d=e.target.dataset;
   if(d.c){const o=S.orders.find(x=>x.id==d.c);o.st=NEXT[o.st];save();oRender()}
@@ -345,7 +375,7 @@ function oTxt(o){
   L.push('📊 Статус: '+ST[o.st]);
   if(o.cm)L.push('💬 Комментарий: '+o.cm);
   if(o.st=='rej'&&o.rs)L.push('❌ Причина отказа: '+o.rs);
-  if(o.st=='done')L.push('💰 Услуги: '+money(N(o.sm)),'✅ Чистая выручка: '+money(N(o.nt)));
+  if(o.st=='done')L.push('💰 Услуги: '+money(N(o.sm)),'✅ Чистая выручка: '+money(net(o)));
   if(o.ag)L.push('⚠️ Требуется согласование');
   return L.join('\n');
 }
@@ -403,10 +433,103 @@ $('#fb').onclick=()=>{$('#fp').hidden=!$('#fp').hidden};
 $('#ft').onclick=e=>{const i=e.target.dataset.i;if(i==null)return;ftab=+i;fRender()};
 $('#fo').onclick=e=>{const k=e.target.dataset.k;if(!k)return;if(ftab)srt=k;else flt=k;fRender();oRender()};
 
+/* ---------- УСЛУГИ (прейскурант) ---------- */
+const UNITS=['коэфф%','шт.','кв.метр','пог.метр'];
+let svEdit=false,svOpen=null,svs='ord';
+S.svc.forEach((r,i)=>{if(!r.id)r.id=Date.now()+i;if(r.g==null)r.g=''});
+const svHas=v=>String(v==null?'':v).trim()!=='';
+const fmtN=v=>{const s=(Math.round(+v*100)/100).toString().split('.');return s[0].replace(/\B(?=(\d{3})+(?!\d))/g,'.')+(s[1]?','+s[1]:'')};
+const svPv=r=>svHas(r.f)?+r.f:svHas(r.t)?+r.t:null;
+const svPcmp=d=>(a,b)=>{const x=svPv(a),y=svPv(b);if(x==null&&y==null)return 0;if(x==null)return 1;if(y==null)return -1;return d*(x-y)};
+const SVC={code:(a,b)=>(a.c||'').localeCompare(b.c||'','ru',{numeric:true}),alpha:(a,b)=>(a.n||'').localeCompare(b.n||'','ru'),dsc:svPcmp(-1),asc:svPcmp(1)};
+const svClean=()=>{S.svc=S.svc.filter(r=>r.id===svOpen||r.g||r.c||r.n||r.f||r.t)};
+function svPrice(r){
+  const pct=r.u=='коэфф%',fmt=v=>fmtN(v)+(pct?'%':'₽');
+  let p='';
+  if(svHas(r.f)&&svHas(r.t))p=+r.f==+r.t?fmt(r.f):fmt(r.f)+' <span class="dh">–</span> '+fmt(r.t);
+  else if(svHas(r.f))p='от '+fmt(r.f);
+  else if(svHas(r.t))p='до '+fmt(r.t);
+  return p?p+`<span class="un">${pct?'коэффициент':'за '+esc(r.u||'шт.')}</span>`:'';
+}
+function svEditor(r){
+  const cs=[...new Set(S.svc.map(x=>(x.g||'').trim()).filter(Boolean))];
+  return `<div class="card se" data-id="${r.id}"><label>Категория</label><input class="g" placeholder="Например: Демонтажные работы" value="${esc(r.g)}">`
+    +(cs.length?`<div class="fl" style="margin:6px 0 0">${cs.map(c=>`<button data-pk="${esc(c)}"${c==(r.g||'').trim()?' class="on"':''}>${esc(c)}</button>`).join('')}</div>`:'')
+    +`<div class="sg"><div><label>Код</label><input class="c" value="${esc(r.c)}"></div><div><label>Наименование услуги</label><input class="n" value="${esc(r.n)}"></div></div>`
+    +`<label>Единица измерения</label><select class="u">${UNITS.map(u=>`<option${u==r.u?' selected':''}>${u}</option>`).join('')}</select>`
+    +`<label>Стоимость</label><div class="pr"><span>От</span><input class="f" type="number" inputmode="decimal" value="${esc(r.f)}"><span>до</span><input class="t" type="number" inputmode="decimal" value="${esc(r.t)}"></div>`
+    +`<div class="mbt" style="margin-top:12px"><button class="btn no" data-sd>Удалить</button><button class="btn" data-sk>Готово</button></div></div>`;
+}
+function svItem(r){
+  if(svEdit&&r.id===svOpen)return svEditor(r);
+  return `<div class="card si${svEdit?' ed':''}" data-id="${r.id}"><div class="l">${r.c?`<div class="sc">${esc(r.c)}</div>`:''}<div class="sn">${esc(r.n)}</div></div><div class="sp">${svPrice(r)}</div>${svEdit?'<span class="pe">✎</span>':''}</div>`;
+}
+function svRender(){
+  $('#sve').classList.toggle('on',svEdit);
+  $('#sva').hidden=$('#svh').hidden=!svEdit;
+  $('#svfo').innerHTML=[['code','По коду'],['alpha','По алфавиту'],['price',svs=='asc'?'Цена ↑':'Цена ↓']]
+    .map(([k,t])=>`<button data-k="${k}"${(k=='price'?svs=='asc'||svs=='dsc':svs==k)?' class="on"':''}>${t}</button>`).join('');
+  const cats=[...new Set(S.svc.map(r=>(r.g||'').trim()).filter(Boolean))];
+  const q=$('#svq').value.trim().toLowerCase();
+  const A=S.svc.filter(r=>(svEdit&&r.id===svOpen)||!q||[r.g,r.c,r.n].join(' ').toLowerCase().includes(q));
+  const G=[...cats,''].map(g=>[g,A.filter(r=>(r.g||'').trim()==g)]).filter(x=>x[1].length);
+  if(SVC[svs])G.forEach(x=>x[1].sort(SVC[svs]));
+  $('#svl').innerHTML=G.map(([g,L])=>{
+    if(!cats.length)return L.map(svItem).join('');
+    const col=!q&&!(svEdit&&L.some(r=>r.id===svOpen))&&S.cgc[g];
+    return `<div class="cgw${col?' c':''}"><h2 class="cg ch" data-cg="${esc(g)}">${esc(g||'Без категории')}<span class="ar">▾</span></h2><div class="cgb">${L.map(svItem).join('')}</div></div>`;
+  }).join('')
+    ||`<p class="u">${S.svc.length?'Ничего не найдено.':'Прейскурант пуст. Нажмите ⋮, чтобы добавить услуги.'}</p>`;
+}
+const svFocus=()=>{const e=document.querySelector('.se');if(e)e.scrollIntoView({block:'center'});return e};
+$('#svl').oninput=e=>{
+  const w=e.target.closest('.se'),k=e.target.className;
+  if(!w||!['g','c','n','u','f','t'].includes(k))return;
+  if(k=='g')e.target.style.borderColor='';
+  const r=S.svc.find(x=>x.id==w.dataset.id);if(r){r[k]=e.target.value;save()}
+};
+$('#svl').onclick=e=>{
+  const pk=e.target.closest('[data-pk]');
+  if(pk){const r=S.svc.find(x=>x.id==pk.closest('.se').dataset.id);if(r){r.g=pk.dataset.pk;save();svRender()}return}
+  const h=e.target.closest('[data-cg]');
+  if(h){const k=h.dataset.cg;S.cgc[k]=S.cgc[k]?0:1;save();svRender();return}
+  if(e.target.closest('[data-sk]')){
+    const g=e.target.closest('.se').querySelector('.g');
+    if(!g.value.trim()){g.style.borderColor='var(--neg)';g.focus();return}
+    svOpen=null;svClean();save();svRender();return}
+  const sd=e.target.closest('[data-sd]');
+  if(sd){
+    const id=sd.closest('.se').dataset.id,r=S.svc.find(x=>x.id==id);
+    ask({title:'Удалить услугу?',text:r?((r.c||'')+' '+(r.n||'')).trim():'',yes:'Удалить'}).then(v=>{
+      if(v){S.svc=S.svc.filter(x=>x.id!=id);svOpen=null;save();svRender()}});
+    return;
+  }
+  const c=e.target.closest('.si');
+  if(c&&svEdit){svOpen=+c.dataset.id;svClean();svRender();svFocus()}
+};
+$('#sve').onclick=()=>{svEdit=!svEdit;svOpen=null;svClean();save();svRender()};
+$('#sva').onclick=()=>{
+  const cats=[...new Set(S.svc.map(r=>(r.g||'').trim()).filter(Boolean))];
+  ask({title:'Новая услуга',text:cats.length?'Выберите категорию из списка или введите новую.':'Введите категорию услуги. Без категории прайс создать нельзя.',choices:cats,fields:[cats.length?'Новая категория':'Категория'],type:'text',yes:'Создать'}).then(v=>{
+    if(!v)return;
+    svOpen=null;svClean();
+    const r={id:Date.now(),g:v[0],c:'',n:'',u:'шт.',f:'',t:''};
+    S.svc.push(r);svOpen=r.id;$('#svq').value='';save();svRender();
+    const e=svFocus();if(e)e.querySelector('.c').focus();
+  });
+};
+$('#svq').oninput=svRender;
+$('#svfo').onclick=e=>{
+  const k=e.target.dataset.k;if(!k)return;
+  svs=k=='price'?(svs=='dsc'?'asc':'dsc'):(svs==k?'ord':k);
+  svRender();
+};
+svRender();
+
 /* ---------- ВКЛАДКИ ---------- */
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x==b));
-  $('#day').hidden=b.dataset.t!='day';$('#ord').hidden=b.dataset.t!='ord';
+  ['day','ord','svc'].forEach(t=>$('#'+t).hidden=b.dataset.t!=t);
 });
 
 draw();oForm();fRender();oRender();
