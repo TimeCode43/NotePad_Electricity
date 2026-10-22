@@ -59,6 +59,11 @@ label{font-size:12px;color:var(--mut)}
 .cp{border:0;background:none;color:var(--mut);padding:0 4px;margin-left:2px;line-height:1;vertical-align:middle;display:inline-flex;align-items:center}
 .cp svg{width:15px;height:15px;pointer-events:none}
 .cp.ok{color:var(--pos)}
+.rt{display:flex;align-items:center;gap:2px;flex:none}
+.dots{color:var(--mut);font-size:22px;padding:0 6px;font-weight:700}
+#ol .card{position:relative}
+.mn{position:absolute;right:12px;top:44px;z-index:5;background:var(--card);border:1px solid var(--ln);border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.3);padding:4px}
+.mn button{border:0;background:none;color:var(--tx);padding:10px 12px;white-space:nowrap;font-size:15px}
 </style>
 </head>
 <body>
@@ -80,6 +85,11 @@ label{font-size:12px;color:var(--mut)}
 </section>
 
 <section id="ord" hidden>
+<div class="card"><h2>Загрузить заказ</h2>
+<button class="btn" id="ldo" style="margin-top:0">Добавить заказ из буфера</button>
+<textarea id="oi" rows="6" placeholder="Вставьте данные заказа сюда" hidden style="margin-top:8px"></textarea>
+<button class="btn alt" id="oa" hidden>Разобрать</button>
+<p class="u" id="om" style="margin:8px 0 0;font-size:13px"></p></div>
 <div class="card"><h2 id="oht">Новый заказ</h2>
 <div class="g">
 <div class="f"><label>Адрес</label><input id="ad" placeholder="Улица, дом, кв."></div>
@@ -258,7 +268,8 @@ function oRender(){
   const dn=O.filter(o=>o.st=='done');
   $('#ot').textContent=`Показано: ${O.length} · завершено: ${dn.length} · услуги ${money(dn.reduce((t,o)=>t+N(o.sm),0))} · чистая ${money(dn.reduce((t,o)=>t+N(o.nt),0))}`;
   $('#ol').innerHTML=O.map(o=>`<div class="card">
-    <div class="oh"><b>${o.ad?`<a class="ad" href="${geo(o.ad)}">${esc(o.ad)}</a>${cpb(o.ad)}`:'Без адреса'}</b><button class="b ${o.st}" data-c="${o.id}">${ST[o.st]}</button></div>
+    <div class="oh"><b>${o.ad?`<a class="ad" href="${geo(o.ad)}">${esc(o.ad)}</a>${cpb(o.ad)}`:'Без адреса'}</b><span class="rt"><button class="b ${o.st}" data-c="${o.id}">${ST[o.st]}</button><button class="x dots" data-m="${o.id}" aria-label="Меню">⋮</button></span></div>
+    <div class="mn" hidden><button data-oc="${o.id}">Скопировать данные заказа</button></div>
     <div class="u">${ru(o.dt)} ${esc(o.tm)}</div>${o.cm?`<div class="cm">${rich(o.cm)}</div>`:''}${o.st=='rej'?`<div class="rs"><b>Причина отказа:</b> <span class="cm">${rich(o.rs)||'не указана'}</span></div>`:''}
     <div class="oh${o.st=='done'?' mo':''}">${o.st=='done'?`<span>Услуги <b>${money(N(o.sm))}</b> · Чистая <b style="color:#32CD32">${money(N(o.nt))}</b></span>`:'<span></span>'}
     <span><button class="x" style="color:var(--ac)" data-e="${o.id}">✎</button><button class="x" data-d="${o.id}">×</button></span></div></div>`).join('')||'<p class="u">Заказов пока нет</p>';
@@ -271,11 +282,69 @@ $('#ob').onclick=()=>{
 $('#ol').onclick=e=>{
   const cb=e.target.closest('[data-cp]');
   if(cb){copyTxt(cb.dataset.cp).then(()=>{cb.classList.add('ok');cb.innerHTML=CHK;setTimeout(()=>{cb.classList.remove('ok');cb.innerHTML=ICO},1200)});return}
+  const mb=e.target.closest('[data-m]');
+  if(mb){const mn=mb.closest('.card').querySelector('.mn'),was=!mn.hidden;closeMn();mn.hidden=was;return}
+  const oc=e.target.closest('[data-oc]');
+  if(oc){const o=S.orders.find(x=>x.id==oc.dataset.oc);if(o)copyTxt(oTxt(o)).then(()=>{oc.textContent='Скопировано ✓';setTimeout(()=>{closeMn();oc.textContent='Скопировать данные заказа'},900)});return}
   const d=e.target.dataset;
   if(d.c){const o=S.orders.find(x=>x.id==d.c);o.st=NEXT[o.st];save();oRender()}
   else if(d.d){S.orders=S.orders.filter(x=>x.id!=d.d);if(eid==d.d){eid=null;oForm()}save();oRender()}
   else if(d.e){eid=+d.e;oForm(S.orders.find(x=>x.id==eid));scrollTo({top:0,behavior:'smooth'})}
 };
+const closeMn=()=>document.querySelectorAll('.mn').forEach(m=>m.hidden=true);
+document.addEventListener('click',e=>{if(!e.target.closest('.mn,[data-m]'))closeMn()});
+
+/* ---------- ОБМЕН ЗАКАЗОМ ЧЕРЕЗ БУФЕР ---------- */
+function oTxt(o){
+  const L=[];
+  if(o.ad)L.push('📍 Адрес: '+o.ad);
+  L.push('📅 Дата: '+ru(o.dt));
+  if(o.tm)L.push('🕐 Время: '+o.tm);
+  L.push('📊 Статус: '+ST[o.st]);
+  if(o.cm)L.push('💬 Комментарий: '+o.cm);
+  if(o.st=='rej'&&o.rs)L.push('❌ Причина отказа: '+o.rs);
+  if(o.st=='done')L.push('💰 Услуги: '+money(N(o.sm)),'✅ Чистая выручка: '+money(N(o.nt)));
+  return L.join('\n');
+}
+function parseOrd(txt){
+  const KEY={'адрес':'ad','дата':'dt','время':'tm','статус':'st','комментарий':'cm','причина отказа':'rs','услуги':'sm','чистая выручка':'nt','чистая':'nt'};
+  const o={ad:'',dt:'',tm:'',cm:'',st:'act',rs:'',sm:'',nt:''};let last=null,found=0;
+  txt.split(/\r?\n/).forEach(raw=>{
+    const t=raw.replace(/^[\u{1F300}-\u{1FAFF}☀-➿️\s]+/u,'').trimEnd();
+    const m=t.match(/^([А-Яа-яЁё ]+?):\s*(.*)$/),k=m&&KEY[m[1].trim().toLowerCase()];
+    if(k){
+      found++;let v=m[2].trim();last=null;
+      if(k=='dt'){const x=v.match(/(\d{2})\.(\d{2})\.(\d{4})/);v=x?x[3]+'-'+x[2]+'-'+x[1]:''}
+      else if(k=='tm'){const x=v.match(/(\d{1,2}):(\d{2})/);v=x?x[1].padStart(2,'0')+':'+x[2]:''}
+      else if(k=='st'){const l=v.toLowerCase();v=/заверш/.test(l)?'done':/отказ/.test(l)?'rej':'act'}
+      else if(k=='sm'||k=='nt'){const d=v.replace(/\D/g,'');v=d?(/^\s*-/.test(v)?'-':'')+d:''}
+      else last=k;
+      o[k]=v;
+    }else if(last)o[last]+='\n'+raw.trimEnd();
+  });
+  if(!found)return null;
+  ['ad','cm','rs'].forEach(k=>o[k]=o[k].trim());
+  if(!o.dt)o.dt=iso();
+  if(o.st!='done'){o.sm='';o.nt=''}
+  if(o.st!='rej')o.rs='';
+  return o;
+}
+const om=t=>{$('#om').textContent=t};
+const oman=on=>{$('#oi').hidden=$('#oa').hidden=!on};
+function importOrd(txt){
+  const o=parseOrd(txt);
+  if(!o){om('Не нашёл в тексте данных заказа.');return}
+  o.id=Date.now();S.orders.push(o);save();oRender();oman(false);$('#oi').value='';
+  om('Добавлен заказ: '+(o.ad||'без адреса')+' · '+ru(o.dt)+'.');
+}
+$('#ldo').onclick=async()=>{
+  let ok=true;try{ok=confirm('Добавить заказ из буфера обмена?')}catch(e){}
+  if(!ok)return;
+  try{const t=await navigator.clipboard.readText();if(!t.trim()){om('Буфер обмена пуст.');return}importOrd(t)}
+  catch(e){oman(true);om('Не удалось прочитать буфер: вставьте данные в поле ниже и нажмите «Разобрать».')}
+};
+$('#oa').onclick=()=>importOrd($('#oi').value);
+
 const FT=[[['all','Все'],['act','Активные'],['done','Завершённые'],['rej','Отказы']],[['new','Новые'],['old','Старые']],[['dsc','По убыванию'],['asc','По возрастанию']]];
 const FN={all:'Все',act:'Активные',done:'Завершённые',rej:'Отказы',new:'Новые',old:'Старые',dsc:'Выручка ↓',asc:'Выручка ↑'};
 function fRender(){
