@@ -44,6 +44,11 @@ label{font-size:12px;color:var(--mut)}
 .oh{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:2px 0}
 .b{border:0;border-radius:99px;padding:3px 11px;font-size:13px;font-weight:600;color:#fff;flex:none}
 .act{background:#d98e04}.done{background:#1f8a4c}.rej{background:#8a8f98}
+#cm,#rs{font-size:16px;resize:none;overflow:hidden;min-height:48px}
+.ad{color:var(--ac);text-decoration:underline;word-break:break-word}
+.rs{border:1px solid var(--neg);border-radius:8px;padding:6px 10px;margin:6px 0;font-size:14px}
+.cm{white-space:pre-wrap;word-break:break-word}
+#ft{border-bottom:1px solid var(--ln);padding-bottom:8px}
 </style>
 </head>
 <body>
@@ -70,13 +75,15 @@ label{font-size:12px;color:var(--mut)}
 <div class="f"><label>Адрес</label><input id="ad" placeholder="Улица, дом, кв."></div>
 <div><label>Дата</label><input type="date" id="dt"></div>
 <div><label>Время</label><input type="time" id="tm"></div>
-<div class="f"><label>Комментарий</label><input id="cm"></div>
+<div class="f"><label>Комментарий</label><textarea id="cm" rows="2"></textarea></div>
 <div class="f"><label>Статус</label><select id="st"><option value="act">Активный</option><option value="done">Завершил</option><option value="rej">Отказ</option></select></div>
+<div class="f" id="rsw" hidden><label>Причина отказа клиента</label><textarea id="rs" rows="2" placeholder="Почему клиент отказался"></textarea></div>
 <div><label>Сумма услуг, ₽</label><input id="sm" type="number" inputmode="decimal"></div>
 <div><label>Чистая выручка, ₽</label><input id="nt" type="number" inputmode="decimal"></div>
 </div>
 <button class="btn" id="ob">Добавить</button></div>
-<div class="fl" id="fl"><button class="on" data-f="all">Все</button><button data-f="act">Активные</button><button data-f="done">Завершённые</button><button data-f="rej">Отказы</button></div>
+<button class="btn alt" id="fb" style="margin:0 0 10px">Фильтр ▾</button>
+<div class="card" id="fp" hidden><div class="fl" id="ft"><button class="on" data-i="0">Статус</button><button data-i="1">Дата</button><button data-i="2">Выручка</button></div><div class="fl" id="fo" style="margin:0"></div></div>
 <p class="u" id="ot"></p>
 <div id="ol"></div>
 </section>
@@ -123,9 +130,9 @@ function calc(){
     w.querySelector('.h').textContent=a?`комиссия ${pc(a)}% · мне ${money(m)}`:'';
   });
   const sm=k=>D[k].reduce((t,r)=>t+N(r.a),0),ded=sm('d'),sp=sm('s'),off=tot-me,pk=me-ded,left=pk-sp;
-  $('#sum').innerHTML=[['Вывод (всего)',sgn(tot)],['Офис',money(off)],['Мне',sgn(me)],['Вычеты',sgn(-ded)],['На карман',sgn(pk)],['Траты',sgn(-sp)]]
-    .map(([a,b])=>`<div class="s"><span>${a}</span><b>${b}</b></div>`).join('')
-    +`<div class="s big"><span>В кармане итого</span><b class="${left<0?'neg':'pos'}">${sgn(left)}</b></div>`;
+  $('#sum').innerHTML=[['Вывод (всего)',sgn(tot)],['Офис','-'+money(off),'#FF0000'],['Мне',sgn(me),'#32CD32'],['Вычеты',sgn(-ded),'#FF7F50'],['На карман',sgn(pk)],['Траты',sgn(-sp),'#FF4500']]
+    .map(([a,b,c])=>`<div class="s"><span>${a}</span><b${c?` style="color:${c}"`:''}>${b}</b></div>`).join('')
+    +`<div class="s big"><span>Чистая дневная выручка</span><b class="${left<0?'neg':'pos'}">${sgn(left)}</b></div>`;
   const HR='━━━━━━━━━━━━━━━',L=[`📅 ${ru(cur)}`,HR,'','💼 ЗАРАБОТАНО'];
   D.j.forEach(r=>{const a=N(r.a);if(!a&&!r.n)return;const c=pc(a);
     L.push(`▪ ${r.n||'заказ'}`,`   ${sgn(a)} → мне ${money(a*(100-c)/100)} · офису ${money(a*c/100)} (${c}%)`)});
@@ -196,27 +203,32 @@ $('#pa').onclick=()=>importRep($('#pi').value);
 
 /* ---------- ЗАКАЗЫ ---------- */
 const ST={act:'Активный',done:'Завершил',rej:'Отказ'},NEXT={act:'done',done:'rej',rej:'act'};
-let eid=null,flt='all';
+let eid=null,flt='all',ftab=0,srt='new';
 
+const fit=t=>{t.style.height='auto';t.style.height=Math.max(t.scrollHeight+2,48)+'px'};
+const rsShow=()=>{$('#rsw').hidden=$('#st').value!='rej';fit($('#rs'))};
+const geo=a=>(/iPhone|iPad/.test(navigator.userAgent)?'https://maps.apple.com/?q=':'geo:0,0?q=')+encodeURIComponent(a);
+$('#cm').oninput=()=>fit($('#cm'));$('#rs').oninput=()=>fit($('#rs'));$('#st').onchange=rsShow;
 function oForm(o){
   o=o||{ad:'',dt:iso(),tm:'',cm:'',st:'act',sm:'',nt:''};
   $('#ad').value=o.ad;$('#dt').value=o.dt;$('#tm').value=o.tm;$('#cm').value=o.cm;
-  $('#st').value=o.st;$('#sm').value=o.sm;$('#nt').value=o.nt;
+  $('#st').value=o.st;$('#sm').value=o.sm;$('#nt').value=o.nt;$('#rs').value=o.rs||'';rsShow();fit($('#cm'));
   $('#ob').textContent=eid?'Сохранить':'Добавить';
   $('#oht').textContent=eid?'Редактирование':'Новый заказ';
 }
 function oRender(){
-  const O=S.orders.filter(o=>flt=='all'||o.st==flt).sort((a,b)=>(b.dt+b.tm).localeCompare(a.dt+a.tm));
+  const K=x=>x.dt+x.tm,cmp={new:(a,b)=>K(b).localeCompare(K(a)),old:(a,b)=>K(a).localeCompare(K(b)),dsc:(a,b)=>N(b.nt)-N(a.nt),asc:(a,b)=>N(a.nt)-N(b.nt)}[srt];
+  const O=S.orders.filter(o=>flt=='all'||o.st==flt).sort(cmp);
   const dn=O.filter(o=>o.st=='done');
   $('#ot').textContent=`Показано: ${O.length} · завершено: ${dn.length} · услуги ${money(dn.reduce((t,o)=>t+N(o.sm),0))} · чистая ${money(dn.reduce((t,o)=>t+N(o.nt),0))}`;
   $('#ol').innerHTML=O.map(o=>`<div class="card">
-    <div class="oh"><b>${esc(o.ad)||'Без адреса'}</b><button class="b ${o.st}" data-c="${o.id}">${ST[o.st]}</button></div>
-    <div class="u">${ru(o.dt)} ${esc(o.tm)}</div>${o.cm?`<div>${esc(o.cm)}</div>`:''}
-    <div class="oh"><span>Услуги <b>${money(N(o.sm))}</b> · Чистая <b>${money(N(o.nt))}</b></span>
+    <div class="oh"><b>${o.ad?`<a class="ad" href="${geo(o.ad)}">${esc(o.ad)}</a>`:'Без адреса'}</b><button class="b ${o.st}" data-c="${o.id}">${ST[o.st]}</button></div>
+    <div class="u">${ru(o.dt)} ${esc(o.tm)}</div>${o.cm?`<div class="cm">${esc(o.cm)}</div>`:''}${o.st=='rej'?`<div class="rs"><b>Причина отказа:</b> <span class="cm">${esc(o.rs)||'не указана'}</span></div>`:''}
+    <div class="oh"><span>Услуги <b>${money(N(o.sm))}</b> · Чистая <b style="color:#32CD32">${money(N(o.nt))}</b></span>
     <span><button class="x" style="color:var(--ac)" data-e="${o.id}">✎</button><button class="x" data-d="${o.id}">×</button></span></div></div>`).join('')||'<p class="u">Заказов пока нет</p>';
 }
 $('#ob').onclick=()=>{
-  const o={id:eid||Date.now(),ad:$('#ad').value.trim(),dt:$('#dt').value||iso(),tm:$('#tm').value,cm:$('#cm').value.trim(),st:$('#st').value,sm:$('#sm').value,nt:$('#nt').value};
+  const o={id:eid||Date.now(),ad:$('#ad').value.trim(),dt:$('#dt').value||iso(),tm:$('#tm').value,cm:$('#cm').value.trim(),st:$('#st').value,rs:$('#st').value=='rej'?$('#rs').value.trim():'',sm:$('#sm').value,nt:$('#nt').value};
   if(eid){const i=S.orders.findIndex(x=>x.id==eid);if(i>=0)S.orders[i]=o;else S.orders.push(o)}else S.orders.push(o);
   eid=null;save();oForm();oRender();
 };
@@ -226,8 +238,16 @@ $('#ol').onclick=e=>{
   else if(d.d){S.orders=S.orders.filter(x=>x.id!=d.d);if(eid==d.d){eid=null;oForm()}save();oRender()}
   else if(d.e){eid=+d.e;oForm(S.orders.find(x=>x.id==eid));scrollTo({top:0,behavior:'smooth'})}
 };
-$('#fl').onclick=e=>{const f=e.target.dataset.f;if(!f)return;flt=f;
-  document.querySelectorAll('#fl button').forEach(b=>b.classList.toggle('on',b.dataset.f==f));oRender()};
+const FT=[[['all','Все'],['act','Активные'],['done','Завершённые'],['rej','Отказы']],[['new','Новые'],['old','Старые']],[['dsc','По убыванию'],['asc','По возрастанию']]];
+const FN={all:'Все',act:'Активные',done:'Завершённые',rej:'Отказы',new:'Новые',old:'Старые',dsc:'Выручка ↓',asc:'Выручка ↑'};
+function fRender(){
+  document.querySelectorAll('#ft button').forEach((b,i)=>b.classList.toggle('on',i==ftab));
+  $('#fo').innerHTML=FT[ftab].map(([k,t])=>`<button data-k="${k}"${(ftab?srt:flt)==k?' class="on"':''}>${t}</button>`).join('');
+  $('#fb').textContent='Фильтр: '+FN[flt]+' · '+FN[srt]+' ▾';
+}
+$('#fb').onclick=()=>{$('#fp').hidden=!$('#fp').hidden};
+$('#ft').onclick=e=>{const i=e.target.dataset.i;if(i==null)return;ftab=+i;fRender()};
+$('#fo').onclick=e=>{const k=e.target.dataset.k;if(!k)return;if(ftab)srt=k;else flt=k;fRender();oRender()};
 
 /* ---------- ВКЛАДКИ ---------- */
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
@@ -235,7 +255,7 @@ document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
   $('#day').hidden=b.dataset.t!='day';$('#ord').hidden=b.dataset.t!='ord';
 });
 
-draw();oForm();oRender();
+draw();oForm();fRender();oRender();
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
