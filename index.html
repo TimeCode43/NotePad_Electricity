@@ -64,6 +64,9 @@ label{font-size:12px;color:var(--mut)}
 #ol .card{position:relative}
 .mn{position:absolute;right:12px;top:44px;z-index:5;background:var(--card);border:1px solid var(--ln);border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.3);padding:4px}
 .mn button{display:block;width:100%;text-align:left;border:0;background:none;color:var(--tx);padding:10px 12px;white-space:nowrap;font-size:15px}
+.oh.ac{margin-top:12px}
+.agb{display:inline-flex;align-items:center;background:#d98e04;color:#fff;border-radius:99px;padding:2px 10px 2px 4px;font-size:13px;font-weight:600;margin:4px 0}
+.agb i{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#fff;color:#b36b00;font-style:normal;font-weight:800;font-size:12px;margin-right:6px}
 .fin{background:var(--ac);color:#fff;border:0;border-radius:99px;padding:6px 14px;font-weight:600;font-size:14px}
 .mdl{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
 .mdl[hidden]{display:none}
@@ -106,6 +109,7 @@ label{font-size:12px;color:var(--mut)}
 <div><label>Дата</label><input type="date" id="dt"></div>
 <div><label>Время</label><input type="time" id="tm"></div>
 <div class="f"><label>Комментарий</label><textarea id="cm" rows="2"></textarea></div>
+<div class="f"><label style="display:flex;gap:8px;align-items:center;font-size:14px;color:var(--tx)"><input type="checkbox" id="ag" style="width:auto;margin:0">Требуется согласование</label></div>
 <div class="f"><label>Статус</label><select id="st"><option value="act">Активный</option><option value="done">Завершил</option><option value="rej">Отказ</option></select></div>
 <div class="f" id="rsw" hidden><label>Причина отказа клиента</label><textarea id="rs" rows="2" placeholder="Почему клиент отказался"></textarea></div>
 <div><label>Сумма услуг, ₽</label><input id="sm" type="number" inputmode="decimal"></div>
@@ -286,7 +290,7 @@ function rich(s){
 function oForm(o){
   o=o||{ad:'',dt:iso(),tm:'',cm:'',st:'act',sm:'',nt:''};
   $('#ad').value=o.ad;$('#dt').value=o.dt;$('#tm').value=o.tm;$('#cm').value=o.cm;
-  $('#st').value=o.st;$('#sm').value=o.sm;$('#nt').value=o.nt;$('#rs').value=o.rs||'';rsShow();fit($('#cm'));
+  $('#st').value=o.st;$('#sm').value=o.sm;$('#nt').value=o.nt;$('#rs').value=o.rs||'';$('#ag').checked=!!o.ag;rsShow();fit($('#cm'));
   $('#ob').textContent=eid?'Сохранить':'Добавить';
   $('#oht').textContent=eid?'Редактирование':'Новый заказ';
 }
@@ -299,12 +303,12 @@ function oRender(){
   $('#ol').innerHTML=O.map(o=>`<div class="card">
     <div class="oh"><b>${o.ad?`<a class="ad" href="${geo(o.ad)}">${esc(o.ad)}</a>${cpb(o.ad)}`:'Без адреса'}</b><span class="rt"><button class="b ${o.st}" data-c="${o.id}">${ST[o.st]}</button><button class="x dots" data-m="${o.id}" aria-label="Меню">⋮</button></span></div>
     <div class="mn" hidden><button data-oc="${o.id}">Скопировать данные заказа</button><button data-od="${o.id}">Дублировать карточку заказа</button></div>
-    <div class="u">${ru(o.dt)} ${esc(o.tm)}</div>${o.cm?`<div class="cm">${rich(o.cm)}</div>`:''}${o.st=='rej'?`<div class="rs"><b>Причина отказа:</b> <span class="cm">${rich(o.rs)||'не указана'}</span></div>`:''}
-    <div class="oh${o.st=='done'?' mo':''}">${o.st=='done'?`<span>Услуги <b>${money(N(o.sm))}</b> · Чистая <b style="color:#32CD32">${money(N(o.nt))}</b></span>`:o.st=='act'?`<button class="fin" data-f="${o.id}">✓ Выполнил</button>`:'<span></span>'}
+    <div class="u">${ru(o.dt)} ${esc(o.tm)}</div>${o.ag?'<div><span class="agb"><i>!</i>согласование</span></div>':''}${o.cm?`<div class="cm">${rich(o.cm)}</div>`:''}${o.st=='rej'?`<div class="rs"><b>Причина отказа:</b> <span class="cm">${rich(o.rs)||'не указана'}</span></div>`:''}
+    <div class="oh${o.st=='done'?' mo':' ac'}">${o.st=='done'?`<span>Услуги <b>${money(N(o.sm))}</b> · Чистая <b style="color:#32CD32">${money(N(o.nt))}</b></span>`:o.st=='act'?`<button class="fin" data-f="${o.id}">✓ Выполнил</button>`:'<span></span>'}
     <span><button class="x" style="color:var(--ac)" data-e="${o.id}">✎</button><button class="x" data-d="${o.id}">×</button></span></div></div>`).join('')||'<p class="u">Заказов пока нет</p>';
 }
 $('#ob').onclick=()=>{
-  const o={id:eid||Date.now(),ad:$('#ad').value.trim(),dt:$('#dt').value||iso(),tm:$('#tm').value,cm:$('#cm').value.trim(),st:$('#st').value,rs:$('#st').value=='rej'?$('#rs').value.trim():'',sm:$('#sm').value,nt:$('#nt').value};
+  const o={id:eid||Date.now(),ad:$('#ad').value.trim(),dt:$('#dt').value||iso(),tm:$('#tm').value,cm:$('#cm').value.trim(),st:$('#st').value,rs:$('#st').value=='rej'?$('#rs').value.trim():'',sm:$('#sm').value,nt:$('#nt').value,ag:$('#ag').checked};
   if(eid){const i=S.orders.findIndex(x=>x.id==eid);if(i>=0)S.orders[i]=o;else S.orders.push(o)}else S.orders.push(o);
   eid=null;save();oForm();oRender();
 };
@@ -324,7 +328,9 @@ $('#ol').onclick=e=>{
     return}
   const d=e.target.dataset;
   if(d.c){const o=S.orders.find(x=>x.id==d.c);o.st=NEXT[o.st];save();oRender()}
-  else if(d.d){S.orders=S.orders.filter(x=>x.id!=d.d);if(eid==d.d){eid=null;oForm()}save();oRender()}
+  else if(d.d){const o=S.orders.find(x=>x.id==d.d);
+    ask({title:'Удалить заказ?',text:o?(o.ad||'Без адреса')+' · '+ru(o.dt):'',yes:'Удалить'}).then(v=>{
+      if(!v)return;S.orders=S.orders.filter(x=>x.id!=d.d);if(eid==d.d){eid=null;oForm()}save();oRender()})}
   else if(d.e){S.col.n=0;$('#nw').classList.remove('c');eid=+d.e;oForm(S.orders.find(x=>x.id==eid));scrollTo({top:0,behavior:'smooth'})}
 };
 const closeMn=()=>document.querySelectorAll('.mn').forEach(m=>m.hidden=true);
@@ -340,22 +346,28 @@ function oTxt(o){
   if(o.cm)L.push('💬 Комментарий: '+o.cm);
   if(o.st=='rej'&&o.rs)L.push('❌ Причина отказа: '+o.rs);
   if(o.st=='done')L.push('💰 Услуги: '+money(N(o.sm)),'✅ Чистая выручка: '+money(N(o.nt)));
+  if(o.ag)L.push('⚠️ Требуется согласование');
   return L.join('\n');
 }
 function parseOrd(txt){
-  const KEY={'адрес':'ad','дата':'dt','время':'tm','статус':'st','комментарий':'cm','причина отказа':'rs','услуги':'sm','чистая выручка':'nt','чистая':'nt'};
-  const o={ad:'',dt:'',tm:'',cm:'',st:'act',rs:'',sm:'',nt:''};let last=null,found=0;
+  const KEY={'адрес':'ad','дата':'dt','время':'tm','статус':'st','комментарий':'cm','причина отказа':'rs','услуги':'sm','чистая выручка':'nt','чистая':'nt','мастер':'_'};
+  const CM={'заявка':'Заявка','фио':'ФИО','фактор':'Фактор','примечание':'Примечание'};
+  const pd=v=>{const x=v.match(/(\d{1,2})\.(\d{1,2})(?:\.(\d{4}))?/);return x?(x[3]||iso().slice(0,4))+'-'+x[2].padStart(2,'0')+'-'+x[1].padStart(2,'0'):''};
+  const o={ad:'',dt:'',tm:'',cm:'',st:'act',rs:'',sm:'',nt:'',ag:false};let last=null,found=0;
   txt.split(/\r?\n/).forEach(raw=>{
+    if(/требуется\s+согласование/i.test(raw)){o.ag=true;return}
     const t=raw.replace(/^[\u{1F300}-\u{1FAFF}☀-➿️\s]+/u,'').trimEnd();
-    const m=t.match(/^([А-Яа-яЁё ]+?):\s*(.*)$/),k=m&&KEY[m[1].trim().toLowerCase()];
+    const m=t.match(/^([А-Яа-яЁё ]+?):\s*(.*)$/),n=m&&m[1].trim().toLowerCase(),k=m&&(KEY[n]||(CM[n]&&'cm'));
     if(k){
       found++;let v=m[2].trim();last=null;
-      if(k=='dt'){const x=v.match(/(\d{2})\.(\d{2})\.(\d{4})/);v=x?x[3]+'-'+x[2]+'-'+x[1]:''}
-      else if(k=='tm'){const x=v.match(/(\d{1,2}):(\d{2})/);v=x?x[1].padStart(2,'0')+':'+x[2]:''}
-      else if(k=='st'){const l=v.toLowerCase();v=/заверш/.test(l)?'done':/отказ/.test(l)?'rej':'act'}
-      else if(k=='sm'||k=='nt'){const d=v.replace(/\D/g,'');v=d?(/^\s*-/.test(v)?'-':'')+d:''}
-      else last=k;
-      o[k]=v;
+      if(CM[n])v=CM[n]+':'+(v?' '+v:'');
+      if(k=='_')return;
+      if(k=='dt')o.dt=pd(v);
+      else if(k=='tm'){const x=v.match(/(\d{1,2}):(\d{2})/),d=pd(v);if(d&&!o.dt)o.dt=d;o.tm=x?x[1].padStart(2,'0')+':'+x[2]:''}
+      else if(k=='st'){const l=v.toLowerCase();o.st=/заверш/.test(l)?'done':/отказ/.test(l)?'rej':'act'}
+      else if(k=='sm'||k=='nt'){const d=v.replace(/\D/g,'');o[k]=d?(/^\s*-/.test(v)?'-':'')+d:''}
+      else if(k=='cm'){o.cm+=(o.cm?'\n':'')+v;last='cm'}
+      else{o[k]=v;last=k}
     }else if(last)o[last]+='\n'+raw.trimEnd();
   });
   if(!found)return null;
