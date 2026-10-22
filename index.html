@@ -51,6 +51,11 @@ label{font-size:12px;color:var(--mut)}
 <div class="tabs"><button class="on" data-t="day">День</button><button data-t="ord">Заказы</button></div>
 
 <section id="day">
+<div class="card"><h2>Загрузить дневную отчётность</h2>
+<button class="btn" id="ld" style="margin-top:0">Вставить отчёт из буфера</button>
+<textarea id="pi" rows="6" placeholder="Вставьте отчёт сюда" hidden style="margin-top:8px"></textarea>
+<button class="btn alt" id="pa" hidden>Разобрать</button>
+<p class="u" id="lm" style="margin:8px 0 0;font-size:13px"></p></div>
 <div class="card"><label>Дата</label><input type="date" id="cd"></div>
 <div class="card"><h2>Заработано</h2><p class="u" style="margin:-4px 0 10px;font-size:13px">Комиссия офису считается сама: от 5000₽ — 50%, меньше — 60%.</p><div id="jobs"></div><button class="btn alt" data-add="j">+ Заказ</button></div>
 <div class="card"><h2>Вычеты</h2><div id="deds"></div><button class="btn alt" data-add="d">+ Вычет</button></div>
@@ -145,6 +150,49 @@ $('#cp').onclick=async()=>{
   try{await navigator.clipboard.writeText(t.value)}catch(e){t.select();try{document.execCommand('copy')}catch(_){}}
   $('#cp').textContent='Скопировано ✓';setTimeout(()=>$('#cp').textContent='Копировать отчёт',1500);
 };
+
+/* ---------- ЗАГРУЗКА ОТЧЁТА ---------- */
+function parseRep(txt){
+  const R={d:null,j:[],dd:[],s:[]},AM=/([+\-])?\s*(\d[\d.\s]*)\s*₽/,num=s=>+s.replace(/\D/g,'')||0;
+  let m=null,pend='',last=null;
+  txt.split(/\r?\n/).forEach(raw=>{
+    const t=raw.trim().replace(/^[\u{1F300}-\u{1FAFF}\u2600-\u27BF\uFE0F\s]+/u,'');
+    if(!t||/^[━\-–—_=\s]{3,}$/.test(t))return;
+    const U=t.toUpperCase();
+    if(!R.d){const x=t.match(/(\d{2})\.(\d{2})\.(\d{4})/);if(x)R.d=x[3]+'-'+x[2]+'-'+x[1]}
+    if(/ЗАРАБОТАНО/.test(U)){m='j';pend='';return}
+    if(/^(ВЫВОД|ИТОГО|ОФИС|МНЕ[\s:])|НА КАРМАН|КАРМАНЕ ИТОГО/.test(U)){m=null;return}
+    if(/^ВЫЧЕТ/.test(U)){m='d';last=null;return}
+    if(/^ТРАТЫ/.test(U)){m='s';last=null;return}
+    const am=t.match(AM);
+    if(m=='j'){
+      if(/^[▪•·]/.test(t)&&!am){pend=t.replace(/^[▪•·]\s*/,'');return}
+      if(am&&am[1]=='+'){const p=t.match(/\(([^)]*)\)/);R.j.push({n:pend||(p?p[1]:''),a:num(am[2])});pend=''}
+    }else if(m){
+      const L=m=='d'?R.dd:R.s;
+      if(am)L.push(last={n:t.replace(AM,'').replace(/^[▪•·]\s*/,'').replace(/[:\s]+$/,'').replace(/\s+/g,' ').trim(),a:num(am[2])});
+      else if(last)last.n=(last.n+' '+t.replace(/^\(|\)$/g,'')).trim();
+    }
+  });
+  return R;
+}
+const msg=t=>{$('#lm').textContent=t};
+const manual=on=>{$('#pi').hidden=$('#pa').hidden=!on};
+function importRep(txt){
+  const R=parseRep(txt);
+  if(!R.j.length&&!R.dd.length&&!R.s.length){msg('Не нашёл в тексте данных отчёта.');return}
+  const dt=R.d||cur,o=S.days[dt];
+  if(o&&(o.j.length||o.d.length||o.s.length)){let ok=false;try{ok=confirm('За '+ru(dt)+' уже есть записи. Заменить их?')}catch(e){}if(!ok)return}
+  const mk=a=>a.map(r=>({n:r.n,a:String(r.a)}));
+  cur=dt;S.days[cur]={j:mk(R.j),d:mk(R.dd),s:mk(R.s)};
+  draw();manual(false);$('#pi').value='';
+  msg('Загружено за '+ru(cur)+': заказов '+R.j.length+', вычетов '+R.dd.length+', трат '+R.s.length+'.');
+}
+$('#ld').onclick=async()=>{
+  try{const t=await navigator.clipboard.readText();if(!t.trim()){msg('Буфер обмена пуст.');return}importRep(t)}
+  catch(e){manual(true);msg('Не удалось прочитать буфер: вставьте отчёт в поле ниже и нажмите «Разобрать».')}
+};
+$('#pa').onclick=()=>importRep($('#pi').value);
 
 /* ---------- ЗАКАЗЫ ---------- */
 const ST={act:'Активный',done:'Завершил',rej:'Отказ'},NEXT={act:'done',done:'rej',rej:'act'};
