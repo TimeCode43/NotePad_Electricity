@@ -183,7 +183,7 @@ function calc(){
     w.querySelector('.h').textContent=a?`комиссия ${pc(a)}% · мне ${money(m)}`:'';
   });
   const sm=k=>D[k].reduce((t,r)=>t+N(r.a),0),ded=sm('d'),sp=sm('s'),off=tot-me,pk=me-ded,left=pk-sp;
-  $('#sum').innerHTML=[['Вывод (всего)',sgn(tot)],['Офис','-'+money(off),'#FF0000'],['Мне',sgn(me),'#32CD32'],['Вычеты',sgn(-ded),ded>0&&'#FF7F50'],['На карман',sgn(pk)],['Траты',sgn(-sp),sp>0&&'#FF4500']]
+  $('#sum').innerHTML=[['Вывод (всего)',sgn(tot)],['Офис','-'+money(off),'#FF0000'],['Мне',sgn(me),'#32CD32'],['Вычеты',sgn(-ded),ded>0&&'#FF7F50'],['Траты',sgn(-sp),sp>0&&'#FF4500']]
     .map(([a,b,c])=>`<div class="s"><span>${a}</span><b${c?` style="color:${c}"`:''}>${b}</b></div>`).join('')
     +`<div class="s big"><span>Чистая дневная выручка</span><b class="${left<0?'neg':'pos'}">${sgn(left)}</b></div>`;
   const HR='━━━━━━━━━━━━━━━',L=[`📅 ${ru(cur)}`,HR,'','💼 ЗАРАБОТАНО'];
