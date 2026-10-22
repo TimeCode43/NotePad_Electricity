@@ -63,7 +63,17 @@ label{font-size:12px;color:var(--mut)}
 .dots{color:var(--mut);font-size:22px;padding:0 6px;font-weight:700}
 #ol .card{position:relative}
 .mn{position:absolute;right:12px;top:44px;z-index:5;background:var(--card);border:1px solid var(--ln);border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.3);padding:4px}
-.mn button{border:0;background:none;color:var(--tx);padding:10px 12px;white-space:nowrap;font-size:15px}
+.mn button{display:block;width:100%;text-align:left;border:0;background:none;color:var(--tx);padding:10px 12px;white-space:nowrap;font-size:15px}
+.fin{background:var(--ac);color:#fff;border:0;border-radius:99px;padding:6px 14px;font-weight:600;font-size:14px}
+.mdl{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.mdl[hidden]{display:none}
+.mb{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:16px;width:100%;max-width:400px}
+.mb h3{margin:0 0 6px;font-size:18px}
+.mb p{margin:0 0 12px;color:var(--mut);font-size:14px;word-break:break-word}
+.mb label{display:block;margin-bottom:3px}
+.mbt{display:flex;gap:8px;margin-top:6px}
+.mbt .btn{margin-top:0;flex:1}
+.btn.no{background:#c0392b;border-color:#c0392b}
 </style>
 </head>
 <body>
@@ -90,7 +100,7 @@ label{font-size:12px;color:var(--mut)}
 <textarea id="oi" rows="6" placeholder="Вставьте данные заказа сюда" hidden style="margin-top:8px"></textarea>
 <button class="btn alt" id="oa" hidden>Разобрать</button>
 <p class="u" id="om" style="margin:8px 0 0;font-size:13px"></p></div>
-<div class="card"><h2 id="oht">Новый заказ</h2>
+<div class="card" id="nw" data-col="n"><h2 class="ch"><span id="oht">Новый заказ</span><span class="ar">▾</span></h2><div class="bd">
 <div class="g">
 <div class="f"><label>Адрес</label><input id="ad" placeholder="Улица, дом, кв."></div>
 <div><label>Дата</label><input type="date" id="dt"></div>
@@ -101,13 +111,15 @@ label{font-size:12px;color:var(--mut)}
 <div><label>Сумма услуг, ₽</label><input id="sm" type="number" inputmode="decimal"></div>
 <div><label>Чистая выручка, ₽</label><input id="nt" type="number" inputmode="decimal"></div>
 </div>
-<button class="btn" id="ob">Добавить</button></div>
+<button class="btn" id="ob">Добавить</button></div></div>
 <button class="btn alt" id="fb" style="margin:0 0 10px">Фильтр ▾</button>
 <div class="card" id="fp" hidden><div class="fl" id="ft"><button class="on" data-i="0">Статус</button><button data-i="1">Дата</button><button data-i="2">Выручка</button></div><div class="fl" id="fo" style="margin:0"></div></div>
 <p class="u" id="ot"></p>
 <div id="ol"></div>
 </section>
 </main>
+<div class="mdl" id="md" hidden><div class="mb"><h3 id="mt"></h3><p id="mx"></p><div id="mf"></div>
+<div class="mbt"><button class="btn no" id="mn"></button><button class="btn" id="my"></button></div></div></div>
 
 <script>
 const $=s=>document.querySelector(s),N=v=>+v||0;
@@ -119,6 +131,23 @@ try{const r=JSON.parse(localStorage.getItem('blk1'));if(r)S=Object.assign(S,r)}c
 const save=()=>{try{localStorage.setItem('blk1',JSON.stringify(S))}catch(e){}};
 const money=n=>{n=Math.round(n);return (n<0?'-':'')+Math.abs(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.')+'₽'};
 const sgn=n=>(n<0?'':'+')+money(n);
+/* Диалог подтверждения: возвращает null (отмена) или массив значений полей */
+function ask(o){return new Promise(res=>{
+  const m=$('#md'),vals=o.vals||[];
+  $('#mt').textContent=o.title;$('#mx').textContent=o.text||'';$('#mx').hidden=!o.text;
+  $('#mf').innerHTML=(o.fields||[]).map((f,i)=>`<label>${esc(f)}</label><input type="number" inputmode="decimal" data-i="${i}" value="${esc(vals[i])}" style="margin-bottom:8px">`).join('');
+  $('#my').textContent=o.yes||'Подтвердить';$('#mn').textContent=o.no||'Отмена';
+  const ins=[...m.querySelectorAll('#mf input')];
+  const done=v=>{m.hidden=true;m.onclick=null;$('#my').onclick=$('#mn').onclick=null;document.removeEventListener('keydown',kd);res(v)};
+  const ok=()=>{const v=ins.map(i=>i.value.trim());
+    if(v.some(x=>x==='')){ins.forEach(i=>i.style.borderColor=i.value.trim()===''?'var(--neg)':'');return}
+    done(v)};
+  const kd=e=>{if(e.key=='Escape')done(null);else if(e.key=='Enter')ok()};
+  document.addEventListener('keydown',kd);
+  $('#my').onclick=ok;$('#mn').onclick=()=>done(null);
+  m.onclick=e=>{if(e.target==m)done(null)};
+  m.hidden=false;if(ins[0])setTimeout(()=>ins[0].focus(),30);
+})}
 
 /* ---------- ДЕНЬ ---------- */
 let cur=iso();
@@ -209,20 +238,19 @@ function parseRep(txt){
 }
 const msg=t=>{$('#lm').textContent=t};
 const manual=on=>{$('#pi').hidden=$('#pa').hidden=!on};
-function importRep(txt){
+async function importRep(txt){
   const R=parseRep(txt);
   if(!R.j.length&&!R.dd.length&&!R.s.length){msg('Не нашёл в тексте данных отчёта.');return}
   const dt=R.d||cur,o=S.days[dt];
-  if(o&&(o.j.length||o.d.length||o.s.length)){let ok=false;try{ok=confirm('За '+ru(dt)+' уже есть записи. Заменить их?')}catch(e){}if(!ok)return}
+  if(o&&(o.j.length||o.d.length||o.s.length)){if(!await ask({title:'Заменить записи?',text:'За '+ru(dt)+' уже есть записи. Заменить их?',yes:'Заменить'}))return}
   const mk=a=>a.map(r=>({n:r.n,a:String(r.a)}));
   cur=dt;S.days[cur]={j:mk(R.j),d:mk(R.dd),s:mk(R.s)};
   draw();manual(false);$('#pi').value='';
   msg('Загружено за '+ru(cur)+': заказов '+R.j.length+', вычетов '+R.dd.length+', трат '+R.s.length+'.');
 }
 $('#ld').onclick=async()=>{
-  let ok=true;try{ok=confirm('Вставить отчёт из буфера обмена?')}catch(e){}
-  if(!ok)return;
-  try{const t=await navigator.clipboard.readText();if(!t.trim()){msg('Буфер обмена пуст.');return}importRep(t)}
+  if(!await ask({title:'Вставить отчёт из буфера?',text:'Данные дневного отчёта будут взяты из буфера обмена.',yes:'Вставить'}))return;
+  try{const t=await navigator.clipboard.readText();if(!t.trim()){msg('Буфер обмена пуст.');return}await importRep(t)}
   catch(e){manual(true);msg('Не удалось прочитать буфер: вставьте отчёт в поле ниже и нажмите «Разобрать».')}
 };
 $('#pa').onclick=()=>importRep($('#pi').value);
@@ -264,14 +292,15 @@ function oForm(o){
 }
 function oRender(){
   const K=x=>x.dt+x.tm,cmp={new:(a,b)=>K(b).localeCompare(K(a)),old:(a,b)=>K(a).localeCompare(K(b)),dsc:(a,b)=>N(b.nt)-N(a.nt),asc:(a,b)=>N(a.nt)-N(b.nt)}[srt];
-  const O=S.orders.filter(o=>flt=='all'||o.st==flt).sort(cmp);
+  const byRev=srt=='dsc'||srt=='asc';
+  const O=S.orders.filter(o=>(flt=='all'||o.st==flt)&&(!byRev||N(o.nt)!=0)).sort(cmp);
   const dn=O.filter(o=>o.st=='done');
   $('#ot').textContent=`Показано: ${O.length} · завершено: ${dn.length} · услуги ${money(dn.reduce((t,o)=>t+N(o.sm),0))} · чистая ${money(dn.reduce((t,o)=>t+N(o.nt),0))}`;
   $('#ol').innerHTML=O.map(o=>`<div class="card">
     <div class="oh"><b>${o.ad?`<a class="ad" href="${geo(o.ad)}">${esc(o.ad)}</a>${cpb(o.ad)}`:'Без адреса'}</b><span class="rt"><button class="b ${o.st}" data-c="${o.id}">${ST[o.st]}</button><button class="x dots" data-m="${o.id}" aria-label="Меню">⋮</button></span></div>
-    <div class="mn" hidden><button data-oc="${o.id}">Скопировать данные заказа</button></div>
+    <div class="mn" hidden><button data-oc="${o.id}">Скопировать данные заказа</button><button data-od="${o.id}">Дублировать карточку заказа</button></div>
     <div class="u">${ru(o.dt)} ${esc(o.tm)}</div>${o.cm?`<div class="cm">${rich(o.cm)}</div>`:''}${o.st=='rej'?`<div class="rs"><b>Причина отказа:</b> <span class="cm">${rich(o.rs)||'не указана'}</span></div>`:''}
-    <div class="oh${o.st=='done'?' mo':''}">${o.st=='done'?`<span>Услуги <b>${money(N(o.sm))}</b> · Чистая <b style="color:#32CD32">${money(N(o.nt))}</b></span>`:'<span></span>'}
+    <div class="oh${o.st=='done'?' mo':''}">${o.st=='done'?`<span>Услуги <b>${money(N(o.sm))}</b> · Чистая <b style="color:#32CD32">${money(N(o.nt))}</b></span>`:o.st=='act'?`<button class="fin" data-f="${o.id}">✓ Выполнил</button>`:'<span></span>'}
     <span><button class="x" style="color:var(--ac)" data-e="${o.id}">✎</button><button class="x" data-d="${o.id}">×</button></span></div></div>`).join('')||'<p class="u">Заказов пока нет</p>';
 }
 $('#ob').onclick=()=>{
@@ -286,10 +315,17 @@ $('#ol').onclick=e=>{
   if(mb){const mn=mb.closest('.card').querySelector('.mn'),was=!mn.hidden;closeMn();mn.hidden=was;return}
   const oc=e.target.closest('[data-oc]');
   if(oc){const o=S.orders.find(x=>x.id==oc.dataset.oc);if(o)copyTxt(oTxt(o)).then(()=>{oc.textContent='Скопировано ✓';setTimeout(()=>{closeMn();oc.textContent='Скопировать данные заказа'},900)});return}
+  const od=e.target.closest('[data-od]');
+  if(od){const o=S.orders.find(x=>x.id==od.dataset.od);if(o){S.orders.push({...o,id:Date.now()});save();closeMn();oRender()}return}
+  const fb=e.target.closest('[data-f]');
+  if(fb){const o=S.orders.find(x=>x.id==fb.dataset.f);
+    if(o)ask({title:'Заказ выполнен',text:o.ad||'Без адреса',fields:['Сумма услуг, ₽','Чистая выручка, ₽'],vals:[o.sm,o.nt],yes:'Подтвердить'})
+      .then(v=>{if(v){o.st='done';o.sm=v[0];o.nt=v[1];save();oRender()}});
+    return}
   const d=e.target.dataset;
   if(d.c){const o=S.orders.find(x=>x.id==d.c);o.st=NEXT[o.st];save();oRender()}
   else if(d.d){S.orders=S.orders.filter(x=>x.id!=d.d);if(eid==d.d){eid=null;oForm()}save();oRender()}
-  else if(d.e){eid=+d.e;oForm(S.orders.find(x=>x.id==eid));scrollTo({top:0,behavior:'smooth'})}
+  else if(d.e){S.col.n=0;$('#nw').classList.remove('c');eid=+d.e;oForm(S.orders.find(x=>x.id==eid));scrollTo({top:0,behavior:'smooth'})}
 };
 const closeMn=()=>document.querySelectorAll('.mn').forEach(m=>m.hidden=true);
 document.addEventListener('click',e=>{if(!e.target.closest('.mn,[data-m]'))closeMn()});
@@ -338,8 +374,7 @@ function importOrd(txt){
   om('Добавлен заказ: '+(o.ad||'без адреса')+' · '+ru(o.dt)+'.');
 }
 $('#ldo').onclick=async()=>{
-  let ok=true;try{ok=confirm('Добавить заказ из буфера обмена?')}catch(e){}
-  if(!ok)return;
+  if(!await ask({title:'Добавить заказ из буфера?',text:'Данные заказа будут взяты из буфера обмена.',yes:'Добавить'}))return;
   try{const t=await navigator.clipboard.readText();if(!t.trim()){om('Буфер обмена пуст.');return}importOrd(t)}
   catch(e){oman(true);om('Не удалось прочитать буфер: вставьте данные в поле ниже и нажмите «Разобрать».')}
 };
