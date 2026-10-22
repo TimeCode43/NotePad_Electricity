@@ -49,6 +49,16 @@ label{font-size:12px;color:var(--mut)}
 .rs{border:1px solid var(--neg);border-radius:8px;padding:6px 10px;margin:6px 0;font-size:14px}
 .cm{white-space:pre-wrap;word-break:break-word}
 #ft{border-bottom:1px solid var(--ln);padding-bottom:8px}
+.row+.row{border-top:1px dashed var(--ln);border-top:1px dashed color-mix(in srgb,var(--mut) 55%,transparent);padding-top:10px}
+.ch{display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+.ar{font-size:16px;line-height:1;transition:transform .15s;padding:0 4px}
+.card.c .ar{transform:rotate(-90deg)}
+.card.c>.bd{display:none}
+.card.c>.ch{margin-bottom:0}
+.mo{border-top:1px solid var(--ln);margin-top:8px;padding-top:8px}
+.cp{border:0;background:none;color:var(--mut);padding:0 4px;margin-left:2px;line-height:1;vertical-align:middle;display:inline-flex;align-items:center}
+.cp svg{width:15px;height:15px;pointer-events:none}
+.cp.ok{color:var(--pos)}
 </style>
 </head>
 <body>
@@ -62,9 +72,9 @@ label{font-size:12px;color:var(--mut)}
 <button class="btn alt" id="pa" hidden>Разобрать</button>
 <p class="u" id="lm" style="margin:8px 0 0;font-size:13px"></p></div>
 <div class="card"><label>Дата</label><input type="date" id="cd"></div>
-<div class="card"><h2>Заработано</h2><p class="u" style="margin:-4px 0 10px;font-size:13px">Комиссия офису считается сама: от 5000₽ — 50%, меньше — 60%.</p><div id="jobs"></div><button class="btn alt" data-add="j">+ Заказ</button></div>
-<div class="card"><h2>Вычеты</h2><div id="deds"></div><button class="btn alt" data-add="d">+ Вычет</button></div>
-<div class="card"><h2>Траты</h2><div id="sps"></div><button class="btn alt" data-add="s">+ Трата</button></div>
+<div class="card" data-col="j"><h2 class="ch">Заработано<span class="ar">▾</span></h2><div class="bd"><p class="u" style="margin:-4px 0 10px;font-size:13px">Комиссия офису считается сама: от 5000₽ — 50%, меньше — 60%.</p><div id="jobs"></div><button class="btn alt" data-add="j">+ Заказ</button></div></div>
+<div class="card" data-col="d"><h2 class="ch">Вычеты<span class="ar">▾</span></h2><div class="bd"><div id="deds"></div><button class="btn alt" data-add="d">+ Вычет</button></div></div>
+<div class="card" data-col="s"><h2 class="ch">Траты<span class="ar">▾</span></h2><div class="bd"><div id="sps"></div><button class="btn alt" data-add="s">+ Трата</button></div></div>
 <div class="card"><h2>Итоги</h2><div id="sum"></div></div>
 <div class="card"><h2>Отчёт</h2><textarea id="rep" rows="20" readonly></textarea><button class="btn" id="cp">Копировать отчёт</button></div>
 </section>
@@ -94,7 +104,7 @@ const $=s=>document.querySelector(s),N=v=>+v||0;
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const iso=()=>new Date().toLocaleDateString('sv-SE');
 const ru=d=>d.split('-').reverse().join('.');
-let S={days:{},orders:[],lp:60};
+let S={days:{},orders:[],lp:60,col:{}};
 try{const r=JSON.parse(localStorage.getItem('blk1'));if(r)S=Object.assign(S,r)}catch(e){}
 const save=()=>{try{localStorage.setItem('blk1',JSON.stringify(S))}catch(e){}};
 const money=n=>{n=Math.round(n);return (n<0?'-':'')+Math.abs(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.')+'₽'};
@@ -130,7 +140,7 @@ function calc(){
     w.querySelector('.h').textContent=a?`комиссия ${pc(a)}% · мне ${money(m)}`:'';
   });
   const sm=k=>D[k].reduce((t,r)=>t+N(r.a),0),ded=sm('d'),sp=sm('s'),off=tot-me,pk=me-ded,left=pk-sp;
-  $('#sum').innerHTML=[['Вывод (всего)',sgn(tot)],['Офис','-'+money(off),'#FF0000'],['Мне',sgn(me),'#32CD32'],['Вычеты',sgn(-ded),'#FF7F50'],['На карман',sgn(pk)],['Траты',sgn(-sp),'#FF4500']]
+  $('#sum').innerHTML=[['Вывод (всего)',sgn(tot)],['Офис','-'+money(off),'#FF0000'],['Мне',sgn(me),'#32CD32'],['Вычеты',sgn(-ded),ded>0&&'#FF7F50'],['На карман',sgn(pk)],['Траты',sgn(-sp),sp>0&&'#FF4500']]
     .map(([a,b,c])=>`<div class="s"><span>${a}</span><b${c?` style="color:${c}"`:''}>${b}</b></div>`).join('')
     +`<div class="s big"><span>Чистая дневная выручка</span><b class="${left<0?'neg':'pos'}">${sgn(left)}</b></div>`;
   const HR='━━━━━━━━━━━━━━━',L=[`📅 ${ru(cur)}`,HR,'','💼 ЗАРАБОТАНО'];
@@ -152,6 +162,10 @@ document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{
   const rows=$(EL[k]).children;rows[rows.length-1].querySelector('.n').focus();
 });
 $('#cd').onchange=e=>{cur=e.target.value||iso();draw()};
+document.querySelectorAll('[data-col]').forEach(c=>{
+  const k=c.dataset.col,set=()=>c.classList.toggle('c',!!S.col[k]);
+  set();c.querySelector('.ch').onclick=()=>{S.col[k]=S.col[k]?0:1;set();save()};
+});
 $('#cp').onclick=async()=>{
   const t=$('#rep');
   try{await navigator.clipboard.writeText(t.value)}catch(e){t.select();try{document.execCommand('copy')}catch(_){}}
@@ -196,6 +210,8 @@ function importRep(txt){
   msg('Загружено за '+ru(cur)+': заказов '+R.j.length+', вычетов '+R.dd.length+', трат '+R.s.length+'.');
 }
 $('#ld').onclick=async()=>{
+  let ok=true;try{ok=confirm('Вставить отчёт из буфера обмена?')}catch(e){}
+  if(!ok)return;
   try{const t=await navigator.clipboard.readText();if(!t.trim()){msg('Буфер обмена пуст.');return}importRep(t)}
   catch(e){manual(true);msg('Не удалось прочитать буфер: вставьте отчёт в поле ниже и нажмите «Разобрать».')}
 };
@@ -209,6 +225,26 @@ const fit=t=>{t.style.height='auto';t.style.height=Math.max(t.scrollHeight+2,48)
 const rsShow=()=>{$('#rsw').hidden=$('#st').value!='rej';fit($('#rs'))};
 const geo=a=>(/iPhone|iPad/.test(navigator.userAgent)?'https://maps.apple.com/?q=':'geo:0,0?q=')+encodeURIComponent(a);
 $('#cm').oninput=()=>fit($('#cm'));$('#rs').oninput=()=>fit($('#rs'));$('#st').onchange=rsShow;
+const SV=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const ICO=SV('<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>'),CHK=SV('<polyline points="5 12 10 17 19 7"/>');
+const cpb=t=>`<button class="cp" data-cp="${esc(t)}" title="Копировать" aria-label="Копировать">${ICO}</button>`;
+async function copyTxt(t){
+  try{await navigator.clipboard.writeText(t)}catch(e){
+    const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;opacity:0';document.body.appendChild(a);
+    a.select();try{a.setSelectionRange(0,t.length)}catch(_){}try{document.execCommand('copy')}catch(_){}a.remove();
+  }
+}
+const PHN=/(^|\D)((?:(?:\+7|[78])[\s\-]*\(?\d{3}\)?|\(?9\d{2}\)?)[\s\-]*\d{3}[\s\-]*\d{2}[\s\-]*\d{2})(?!\d)/g;
+function rich(s){
+  s=String(s==null?'':s);let o='',i=0,m;PHN.lastIndex=0;
+  while((m=PHN.exec(s))){
+    const st=m.index+m[1].length,ph=m[2];let d=ph.replace(/\D/g,'');
+    if(d.length==10)d='7'+d;else if(d[0]=='8')d='7'+d.slice(1);
+    o+=esc(s.slice(i,st))+`<a class="ad" href="tel:+${d}">${esc(ph)}</a>${cpb('+'+d)}`;
+    i=st+ph.length;
+  }
+  return o+esc(s.slice(i));
+}
 function oForm(o){
   o=o||{ad:'',dt:iso(),tm:'',cm:'',st:'act',sm:'',nt:''};
   $('#ad').value=o.ad;$('#dt').value=o.dt;$('#tm').value=o.tm;$('#cm').value=o.cm;
@@ -222,9 +258,9 @@ function oRender(){
   const dn=O.filter(o=>o.st=='done');
   $('#ot').textContent=`Показано: ${O.length} · завершено: ${dn.length} · услуги ${money(dn.reduce((t,o)=>t+N(o.sm),0))} · чистая ${money(dn.reduce((t,o)=>t+N(o.nt),0))}`;
   $('#ol').innerHTML=O.map(o=>`<div class="card">
-    <div class="oh"><b>${o.ad?`<a class="ad" href="${geo(o.ad)}">${esc(o.ad)}</a>`:'Без адреса'}</b><button class="b ${o.st}" data-c="${o.id}">${ST[o.st]}</button></div>
-    <div class="u">${ru(o.dt)} ${esc(o.tm)}</div>${o.cm?`<div class="cm">${esc(o.cm)}</div>`:''}${o.st=='rej'?`<div class="rs"><b>Причина отказа:</b> <span class="cm">${esc(o.rs)||'не указана'}</span></div>`:''}
-    <div class="oh"><span>Услуги <b>${money(N(o.sm))}</b> · Чистая <b style="color:#32CD32">${money(N(o.nt))}</b></span>
+    <div class="oh"><b>${o.ad?`<a class="ad" href="${geo(o.ad)}">${esc(o.ad)}</a>${cpb(o.ad)}`:'Без адреса'}</b><button class="b ${o.st}" data-c="${o.id}">${ST[o.st]}</button></div>
+    <div class="u">${ru(o.dt)} ${esc(o.tm)}</div>${o.cm?`<div class="cm">${rich(o.cm)}</div>`:''}${o.st=='rej'?`<div class="rs"><b>Причина отказа:</b> <span class="cm">${rich(o.rs)||'не указана'}</span></div>`:''}
+    <div class="oh${o.st=='done'?' mo':''}">${o.st=='done'?`<span>Услуги <b>${money(N(o.sm))}</b> · Чистая <b style="color:#32CD32">${money(N(o.nt))}</b></span>`:'<span></span>'}
     <span><button class="x" style="color:var(--ac)" data-e="${o.id}">✎</button><button class="x" data-d="${o.id}">×</button></span></div></div>`).join('')||'<p class="u">Заказов пока нет</p>';
 }
 $('#ob').onclick=()=>{
@@ -233,6 +269,8 @@ $('#ob').onclick=()=>{
   eid=null;save();oForm();oRender();
 };
 $('#ol').onclick=e=>{
+  const cb=e.target.closest('[data-cp]');
+  if(cb){copyTxt(cb.dataset.cp).then(()=>{cb.classList.add('ok');cb.innerHTML=CHK;setTimeout(()=>{cb.classList.remove('ok');cb.innerHTML=ICO},1200)});return}
   const d=e.target.dataset;
   if(d.c){const o=S.orders.find(x=>x.id==d.c);o.st=NEXT[o.st];save();oRender()}
   else if(d.d){S.orders=S.orders.filter(x=>x.id!=d.d);if(eid==d.d){eid=null;oForm()}save();oRender()}
