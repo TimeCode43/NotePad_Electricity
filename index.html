@@ -99,6 +99,40 @@ label{font-size:12px;color:var(--mut)}
 .mbt{display:flex;gap:8px;margin-top:6px}
 .mbt .btn{margin-top:0;flex:1}
 .btn.no{background:#c0392b;border-color:#c0392b}
+.ts{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1b1f24;color:#fff;padding:10px 16px;border-radius:99px;font-size:14px;z-index:60;max-width:90vw;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.ts[hidden]{display:none}
+.pill{border:1px solid var(--ac);background:var(--card);color:var(--ac);border-radius:99px;padding:4px 12px;font-size:13px;font-weight:600}
+.pill.on{background:var(--ac);color:#fff}
+.hd{display:flex;align-items:center;gap:6px}
+.si{flex-wrap:wrap}
+.si.sel{border-color:var(--ac)}
+.qt{flex:0 0 100%;display:flex;justify-content:flex-end;align-items:center;gap:8px}
+.qb{width:38px;height:38px;border:1px solid var(--ln);background:var(--bg);color:var(--tx);border-radius:10px;font-size:20px;line-height:1;padding:0}
+.qb.tg{width:auto;padding:0 14px;font-size:14px;font-weight:600}
+.qb.tg.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.qn{width:80px;text-align:center}
+.qu{font-size:13px;color:var(--mut)}
+#esp{position:sticky;bottom:8px;z-index:4;box-shadow:0 4px 18px rgba(0,0,0,.25)}
+#esp .et{display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer}
+#esp .et b{font-size:18px}
+#esp .el{font-size:14px;padding:4px 0;border-bottom:1px dashed var(--ln);word-break:break-word}
+#esp .ebt{display:flex;gap:6px;margin-top:8px}
+#esp .ebt .btn{margin-top:0;flex:1;padding:8px 4px;font-size:13px}
+.cl{position:fixed;inset:0;background:var(--bg);z-index:40;overflow:auto;padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0px))}
+.cl[hidden]{display:none}
+.cl-in{max-width:560px;margin:0 auto}
+.clh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.clh h1{font-size:26px;margin:0}
+.cl h2.cc{font-size:15px;margin:22px 0 8px;color:var(--ac)}
+.ci{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:14px;background:var(--card);border:1px solid var(--ln);border-radius:14px;margin-bottom:10px}
+.ci .l{min-width:0;flex:1}
+.cn{font-size:19px;font-weight:600;word-break:break-word}
+.cprice{font-size:20px;font-weight:700;color:var(--ac);text-align:right;white-space:nowrap}
+.cl .un{font-size:13px}
+.chart{overflow-x:auto;margin-top:6px}
+.chart svg{display:block}
+.chart .bp{fill:var(--pos)}.chart .bn{fill:var(--neg)}
+.chart rect.sel{stroke:var(--tx);stroke-width:2}
 </style>
 </head>
 <body>
@@ -112,13 +146,23 @@ label{font-size:12px;color:var(--mut)}
 <button class="btn alt" id="pa" hidden>Разобрать</button>
 <p class="u" id="lm" style="margin:8px 0 0;font-size:13px"></p></div>
 <div class="card"><label>Дата</label>
-<div style="display:flex;gap:8px;align-items:stretch"><input type="date" id="cd" style="flex:1 1 0"><button class="btn alt" id="at" style="width:auto;margin:0;padding:8px 12px;font-size:14px;flex:0 0 42%">Отчёт за всё время</button></div>
+<div style="display:flex;gap:8px;align-items:stretch"><input type="date" id="cd" style="flex:1 1 0"><button class="btn alt" id="at" style="width:auto;margin:0;padding:8px 12px;font-size:14px;flex:0 0 42%">Отчёт за период</button></div>
 <div id="atp" hidden style="margin-top:12px"></div></div>
 <div class="card" data-col="j"><h2 class="ch">Заработано<span class="ar">▾</span></h2><div class="bd"><p class="u" style="margin:-4px 0 10px;font-size:13px">Комиссия офису считается сама: от 5000₽ — 50%, меньше — 60%.</p><div id="jobs"></div><button class="btn alt" data-add="j">+ Заказ</button></div></div>
 <div class="card" data-col="d"><h2 class="ch">Вычеты<span class="ar">▾</span></h2><div class="bd"><div id="deds"></div><button class="btn alt" data-add="d">+ Вычет</button></div></div>
 <div class="card" data-col="s"><h2 class="ch">Траты<span class="ar">▾</span></h2><div class="bd"><div id="sps"></div><button class="btn alt" data-add="s">+ Трата</button></div></div>
 <div class="card"><h2>Итоги</h2><div id="sum"></div></div>
 <div class="card" data-col="r"><h2 class="ch">Отчёт<span class="ar">▾</span></h2><div class="bd"><textarea id="rep" rows="20" readonly></textarea><button class="btn" id="cp">Копировать отчёт</button></div></div>
+<div class="card" data-col="b"><h2 class="ch">Резервная копия<span class="ar">▾</span></h2><div class="bd">
+<p class="u" id="bki" style="margin:0 0 8px;font-size:13px"></p>
+<button class="btn alt" id="bc" style="margin-top:0">Скопировать копию данных</button>
+<button class="btn alt" id="bd">Скачать копию файлом</button>
+<button class="btn alt" id="br">Восстановить из буфера</button>
+<button class="btn alt" id="bf">Восстановить из файла</button>
+<input type="file" id="bfi" accept=".json,application/json,text/plain" hidden>
+<textarea id="bt" rows="5" hidden placeholder="Вставьте копию данных сюда" style="margin-top:8px"></textarea>
+<button class="btn" id="bg" hidden>Восстановить</button>
+<p class="u" id="bm" style="margin:8px 0 0;font-size:13px"></p></div></div>
 </section>
 
 <section id="ord" hidden>
@@ -147,12 +191,16 @@ label{font-size:12px;color:var(--mut)}
 <section id="svc" hidden>
 <div class="card"><input id="svq" type="search" placeholder="Поиск по коду, названию, категории" style="margin-bottom:8px">
 <div class="fl" id="svfo" style="margin:0"></div></div>
-<div class="card"><div class="oh" style="margin:0"><h2 style="margin:0">Прейскурант</h2><button class="x pen" id="sve" aria-label="Редактирование">✎</button></div>
+<div class="card"><div class="oh" style="margin:0"><h2 style="margin:0">Прейскурант</h2><span class="hd"><button class="pill" id="svm">Смета</button><button class="pill" id="svcl">Клиенту</button><button class="x pen" id="sve" aria-label="Редактирование">✎</button></span></div>
+<p class="u" id="sht" hidden style="margin:10px 0 0;font-size:13px">Режим сметы: укажите количество у нужных услуг, итог считается внизу.</p>
 <p class="u" id="svh" hidden style="margin:10px 0 0;font-size:13px">Режим редактирования: выберите услугу, чтобы изменить её, или добавьте новую. Чтобы выйти, нажмите ✎ ещё раз.</p>
 <button class="btn" id="sva" hidden>+ Услуга</button></div>
 <div id="svl"></div>
+<div class="card" id="esp" hidden></div>
 </section>
 </main>
+<div class="cl" id="cl" hidden><div class="cl-in"><div class="clh"><h1>Прейскурант</h1><button class="pill" id="clx">Закрыть ✕</button></div><div id="clb"></div></div></div>
+<div class="ts" id="ts" hidden></div>
 <div class="mdl" id="md" hidden><div class="mb"><h3 id="mt"></h3><p id="mx"></p><div id="mf"></div>
 <div class="mbt"><button class="btn no" id="mn"></button><button class="btn" id="my"></button></div></div></div>
 
@@ -161,12 +209,13 @@ const $=s=>document.querySelector(s),N=v=>+v||0;
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const iso=()=>new Date().toLocaleDateString('sv-SE');
 const ru=d=>d.split('-').reverse().join('.');
-let S={days:{},orders:[],lp:60,col:{},svc:[],cgc:{}};
+let S={days:{},orders:[],lp:60,col:{},svc:[],cgc:{},est:{}};
 try{const r=JSON.parse(localStorage.getItem('blk1'));if(r)S=Object.assign(S,r)}catch(e){}
 const save=()=>{try{localStorage.setItem('blk1',JSON.stringify(S))}catch(e){}};
 const money=n=>{n=Math.round(n);return (n<0?'-':'')+Math.abs(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.')+'₽'};
 const sgn=n=>(n<0?'':'+')+money(n);
 const sgz=n=>Math.round(n)==0?money(0):sgn(n);
+function toast(t){const e=$('#ts');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,2800)}
 /* Диалог подтверждения: возвращает null (отмена) или массив значений полей */
 function ask(o){return new Promise(res=>{
   const m=$('#md'),vals=o.vals||[];
@@ -231,22 +280,80 @@ function calc(){
   save();
 }
 
+const MON=['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+let atP='all',atF='',atT='',atG=null;
+function atRange(p){
+  const t=iso(),[y,m,d]=t.split('-').map(Number),f=(yy,mm,dd)=>new Date(yy,mm,dd).toLocaleDateString('sv-SE');
+  if(p=='m0')return[f(y,m-1,1),f(y,m,0)];
+  if(p=='m1')return[f(y,m-2,1),f(y,m-1,0)];
+  if(p=='w')return[f(y,m-1,d-6),t];
+  return['',''];
+}
+function atSvg(it,mode){
+  const bw=it.length<=8?52:(mode=='d'?26:46),gp=6,H=150,top=20,bot=22,ph=H-top-bot;
+  const W=it.length*(bw+gp)+gp,vs=it.map(x=>x.v),mx=Math.max(0,...vs),mn=Math.min(0,...vs),sp=(mx-mn)||1,y=v=>top+(mx-v)/sp*ph,y0=y(0);
+  let o=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><line x1="0" x2="${W}" y1="${y0}" y2="${y0}" stroke="var(--ln)" stroke-width="1"/>`;
+  it.forEach((x,i)=>{
+    const bx=gp+i*(bw+gp),yy=y(x.v),h=Math.max(Math.abs(yy-y0),1),yt=Math.min(yy,y0);
+    o+=`<rect class="${x.v<0?'bn':'bp'}" data-bi="${i}" x="${bx}" y="${yt}" width="${bw}" height="${h}" rx="3"/>`
+      +`<text x="${bx+bw/2}" y="${H-7}" text-anchor="middle" font-size="10" fill="var(--mut)">${esc(x.lab)}</text>`;
+    if(it.length<=8)o+=`<text x="${bx+bw/2}" y="${x.v<0?y0-4:yt-4}" text-anchor="middle" font-size="10" fill="var(--tx)">${money(x.v)}</text>`;
+    o+=`<rect data-bi="${i}" x="${bx-gp/2}" y="0" width="${bw+gp}" height="${H}" fill="transparent"/>`;
+  });
+  return o+'</svg>';
+}
+let atItems=[];
 function atRender(){
   const P=$('#atp');if(P.hidden)return;
-  let tot=0,me=0,ded=0,sp=0,n=0;
-  Object.values(S.days).forEach(D=>{
-    if(!(D.j.length||D.d.length||D.s.length))return;n++;
-    D.j.forEach(r=>{const a=N(r.a);tot+=a;me+=a*(100-pc(a))/100});
-    D.d.forEach(r=>ded+=N(r.a));D.s.forEach(r=>sp+=N(r.a));
+  let tot=0,me=0,ded=0,sp=0,n=0,cnt=0;const byD=[];
+  Object.keys(S.days).sort().forEach(k=>{
+    if((atF&&k<atF)||(atT&&k>atT))return;
+    const D=S.days[k];if(!(D.j.length||D.d.length||D.s.length))return;
+    let t=0,m=0,dd=0,ss=0;
+    D.j.forEach(r=>{const a=N(r.a);t+=a;m+=a*(100-pc(a))/100;if(a>0)cnt++});
+    D.d.forEach(r=>dd+=N(r.a));D.s.forEach(r=>ss+=N(r.a));
+    n++;tot+=t;me+=m;ded+=dd;sp+=ss;byD.push({k,v:m-dd-ss});
   });
-  const off=tot-me,clean=me-ded-sp;
-  P.innerHTML=`<p class="u" style="margin:0 0 6px;font-size:13px">За всё время · дней с записями: ${n}</p>`
+  const off=tot-me,clean=me-ded-sp,mode=atG||(n<=31?'d':'m');
+  let it;
+  if(mode=='d')it=byD.map(x=>({lab:x.k.slice(8),full:ru(x.k),v:x.v}));
+  else{const M={};byD.forEach(x=>{const k=x.k.slice(0,7);M[k]=(M[k]||0)+x.v});
+    it=Object.keys(M).map(k=>({lab:MON[+k.slice(5)-1]+' '+k.slice(2,4),full:MON[+k.slice(5)-1]+' '+k.slice(0,4),v:M[k]}))}
+  atItems=it;
+  const chips=[['all','Всё время'],['m0','Этот месяц'],['m1','Прошлый месяц'],['w','7 дней']].map(([k,t])=>`<button data-pr="${k}"${atP==k?' class="on"':''}>${t}</button>`).join('');
+  const per=atF||atT?'Период: '+(atF?ru(atF):'…')+' – '+(atT?ru(atT):'…'):'За всё время';
+  P.innerHTML=`<div class="fl" style="margin:0 0 8px">${chips}</div>`
+    +`<div class="g" style="margin-bottom:8px"><div><label>С</label><input type="date" id="af" value="${atF}"></div><div><label>По</label><input type="date" id="atd" value="${atT}"></div></div>`
+    +`<p class="u" style="margin:0 0 6px;font-size:13px">${per} · дней с записями: ${n}</p>`
     +`<div class="s"><span>Доход грязными</span><b>${money(tot)}</b></div>`
     +`<div class="s"><span>Общие траты<br><small class="u">вычеты ${money(ded)} · траты ${money(sp)}</small></span><b>${money(ded+sp)}</b></div>`
     +`<div class="s"><span>Отдал офису</span><b>${money(off)}</b></div>`
-    +`<div class="s big"><span>Чистая выручка</span><b class="${clean<0?'neg':'pos'}">${money(clean)}</b></div>`;
+    +`<div class="s big"><span>Чистая выручка</span><b class="${clean<0?'neg':'pos'}">${money(clean)}</b></div>`
+    +`<div class="s"><span class="u">Заказов</span><span>${cnt}</span></div>`
+    +`<div class="s"><span class="u">Средний чек (грязными)</span><span>${cnt?money(tot/cnt):'—'}</span></div>`
+    +`<div class="s"><span class="u">Чистая в день (в среднем)</span><span>${n?money(clean/n):'—'}</span></div>`
+    +`<p class="u" style="margin:12px 0 0;font-size:13px">График чистой выручки</p>`
+    +`<div class="fl" style="margin:6px 0 0"><button data-ga="d"${mode=='d'?' class="on"':''}>По дням</button><button data-ga="m"${mode=='m'?' class="on"':''}>По месяцам</button></div>`
+    +(it.length?`<div class="chart" id="atch">${atSvg(it,mode)}</div><p class="u" id="atc" style="margin:4px 0 0;font-size:13px">Нажмите на столбец, чтобы увидеть сумму</p>`:'<p class="u" style="margin:8px 0 0">Нет данных для графика.</p>');
+  const ch=$('#atch');if(ch)ch.scrollLeft=ch.scrollWidth;
 }
-$('#at').onclick=()=>{const P=$('#atp');P.hidden=!P.hidden;$('#at').textContent=P.hidden?'Отчёт за всё время':'Скрыть отчёт';atRender()};
+$('#at').onclick=()=>{const P=$('#atp');P.hidden=!P.hidden;$('#at').textContent=P.hidden?'Отчёт за период':'Скрыть отчёт';atRender()};
+$('#atp').onclick=e=>{
+  const pr=e.target.closest('[data-pr]');
+  if(pr){atP=pr.dataset.pr;[atF,atT]=atRange(atP);atRender();return}
+  const ga=e.target.closest('[data-ga]');
+  if(ga){atG=ga.dataset.ga;atRender();return}
+  const bi=e.target.closest('[data-bi]');
+  if(bi){
+    const i=+bi.dataset.bi,x=atItems[i];if(!x)return;
+    document.querySelectorAll('#atch rect.sel').forEach(r=>r.classList.remove('sel'));
+    document.querySelectorAll('#atch rect[data-bi="'+i+'"]').forEach(r=>{if(r.classList.contains('bp')||r.classList.contains('bn'))r.classList.add('sel')});
+    $('#atc').textContent=x.full+': '+money(x.v);
+  }
+};
+$('#atp').onchange=e=>{
+  if(e.target.id=='af'||e.target.id=='atd'){atF=$('#af').value;atT=$('#atd').value;atP='c';atRender()}
+};
 document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{
   const k=b.dataset.add;
   day()[k].push(k=='j'?{n:'',a:''}:{n:'',a:''});
@@ -337,6 +444,16 @@ function rich(s){
   }
   return o+esc(s.slice(i));
 }
+function syncOrd(o,prev){
+  Object.values(S.days).forEach(D=>{D.j=D.j.filter(r=>r.oid!=o.id)});
+  const was=o.sy;
+  if(o.st=='done'&&(was||prev!='done')){
+    (S.days[o.dt]||(S.days[o.dt]={j:[],d:[],s:[]})).j.push({n:o.ad||'Заказ',a:String(o.sm||''),oid:o.id});
+    o.sy=true;
+    if(!was)toast('Добавлено в отчёт за '+ru(o.dt));
+  }else o.sy=false;
+  draw();
+}
 function oForm(o){
   o=o||{ad:'',dt:iso(),tm:'',cm:'',st:'act',sm:'',nt:''};
   $('#ad').value=o.ad;$('#dt').value=o.dt;$('#tm').value=o.tm;$('#cm').value=o.cm;
@@ -358,8 +475,10 @@ function oRender(){
     <span><button class="x" style="color:var(--ac)" data-e="${o.id}">✎</button><button class="x" data-d="${o.id}">×</button></span></div></div>`).join('')||'<p class="u">Заказов пока нет</p>';
 }
 $('#ob').onclick=()=>{
-  const o={id:eid||Date.now(),ad:$('#ad').value.trim(),dt:$('#dt').value||iso(),tm:$('#tm').value,cm:$('#cm').value.trim(),st:$('#st').value,rs:$('#st').value=='rej'?$('#rs').value.trim():'',sm:$('#sm').value,ag:$('#ag').checked};
-  if(eid){const i=S.orders.findIndex(x=>x.id==eid);if(i>=0)S.orders[i]=o;else S.orders.push(o)}else S.orders.push(o);
+  const old=eid?S.orders.find(x=>x.id==eid):null;
+  const o={id:eid||Date.now(),ad:$('#ad').value.trim(),dt:$('#dt').value||iso(),tm:$('#tm').value,cm:$('#cm').value.trim(),st:$('#st').value,rs:$('#st').value=='rej'?$('#rs').value.trim():'',sm:$('#sm').value,ag:$('#ag').checked,sy:old?!!old.sy:false};
+  if(old)S.orders[S.orders.indexOf(old)]=o;else S.orders.push(o);
+  syncOrd(o,old?old.st:undefined);
   eid=null;save();oForm();oRender();
 };
 $('#ol').onclick=e=>{
@@ -370,17 +489,17 @@ $('#ol').onclick=e=>{
   const oc=e.target.closest('[data-oc]');
   if(oc){const o=S.orders.find(x=>x.id==oc.dataset.oc);if(o)copyTxt(oTxt(o)).then(()=>{oc.textContent='Скопировано ✓';setTimeout(()=>{closeMn();oc.textContent='Скопировать данные заказа'},900)});return}
   const od=e.target.closest('[data-od]');
-  if(od){const o=S.orders.find(x=>x.id==od.dataset.od);if(o){S.orders.push({...o,id:Date.now()});save();closeMn();oRender()}return}
+  if(od){const o=S.orders.find(x=>x.id==od.dataset.od);if(o){S.orders.push({...o,id:Date.now(),sy:false});save();closeMn();oRender()}return}
   const fb=e.target.closest('[data-f]');
   if(fb){const o=S.orders.find(x=>x.id==fb.dataset.f);
     if(o)ask({title:'Заказ выполнен',text:o.ad||'Без адреса',fields:['Сумма услуг, ₽'],vals:[o.sm],yes:'Подтвердить'})
-      .then(v=>{if(v){o.st='done';o.sm=v[0];save();oRender()}});
+      .then(v=>{if(v){const prev=o.st;o.st='done';o.sm=v[0];syncOrd(o,prev);save();oRender()}});
     return}
   const d=e.target.dataset;
-  if(d.c){const o=S.orders.find(x=>x.id==d.c);o.st=NEXT[o.st];save();oRender()}
+  if(d.c){const o=S.orders.find(x=>x.id==d.c),prev=o.st;o.st=NEXT[o.st];syncOrd(o,prev);save();oRender()}
   else if(d.d){const o=S.orders.find(x=>x.id==d.d);
-    ask({title:'Удалить заказ?',text:o?(o.ad||'Без адреса')+' · '+ru(o.dt):'',yes:'Удалить'}).then(v=>{
-      if(!v)return;S.orders=S.orders.filter(x=>x.id!=d.d);if(eid==d.d){eid=null;oForm()}save();oRender()})}
+    ask({title:'Удалить заказ?',text:o?(o.ad||'Без адреса')+' · '+ru(o.dt)+(o.sy?'. Он также будет убран из отчёта дня.':''):'',yes:'Удалить'}).then(v=>{
+      if(!v)return;Object.values(S.days).forEach(D=>{D.j=D.j.filter(r=>r.oid!=d.d)});draw();S.orders=S.orders.filter(x=>x.id!=d.d);if(eid==d.d){eid=null;oForm()}save();oRender()})}
   else if(d.e){S.col.n=0;$('#nw').classList.remove('c');eid=+d.e;oForm(S.orders.find(x=>x.id==eid));scrollTo({top:0,behavior:'smooth'})}
 };
 const closeMn=()=>document.querySelectorAll('.mn').forEach(m=>m.hidden=true);
@@ -432,7 +551,7 @@ const oman=on=>{$('#oi').hidden=$('#oa').hidden=!on};
 function importOrd(txt){
   const o=parseOrd(txt);
   if(!o){om('Не нашёл в тексте данных заказа.');return}
-  o.id=Date.now();S.orders.push(o);save();oRender();oman(false);$('#oi').value='';
+  o.id=Date.now();S.orders.push(o);syncOrd(o);save();oRender();oman(false);$('#oi').value='';
   om('Добавлен заказ: '+(o.ad||'без адреса')+' · '+ru(o.dt)+'.');
 }
 $('#ldo').onclick=async()=>{
@@ -455,7 +574,7 @@ $('#fo').onclick=e=>{const k=e.target.dataset.k;if(!k)return;if(ftab)srt=k;else 
 
 /* ---------- УСЛУГИ (прейскурант) ---------- */
 const UNITS=['коэфф%','шт.','кв.метр','пог.метр'];
-let svEdit=false,svOpen=null,svs='ord';
+let svEdit=false,svOpen=null,svs='ord',svEst=false,svEo=false;
 S.svc.forEach((r,i)=>{if(!r.id)r.id=Date.now()+i;if(r.g==null)r.g=''});
 const svHas=v=>String(v==null?'':v).trim()!=='';
 const fmtN=v=>{const s=(Math.round(+v*100)/100).toString().split('.');return s[0].replace(/\B(?=(\d{3})+(?!\d))/g,'.')+(s[1]?','+s[1]:'')};
@@ -482,10 +601,48 @@ function svEditor(r){
 }
 function svItem(r){
   if(svEdit&&r.id===svOpen)return svEditor(r);
-  return `<div class="card si${svEdit?' ed':''}" data-id="${r.id}"><div class="l">${r.c?`<div class="sc">${esc(r.c)}</div>`:''}<div class="sn">${esc(r.n)}</div></div><div class="sp">${svPrice(r)}</div>${svEdit?'<span class="pe">✎</span>':''}</div>`;
+  let qt='',sel='';
+  if(svEst){
+    const q=N(S.est[r.id]);sel=q>0?' sel':'';
+    qt=r.u=='коэфф%'
+      ?`<div class="qt"><button class="qb tg${q?' on':''}" data-qt>${q?'Применено ✓':'Применить'}</button></div>`
+      :`<div class="qt"><button class="qb" data-qm>−</button><input class="qn" type="number" inputmode="decimal" min="0" placeholder="0" value="${q||''}"><button class="qb" data-qp>+</button><span class="qu">${esc(r.u||'шт.')}</span></div>`;
+  }
+  return `<div class="card si${svEdit?' ed':''}${sel}" data-id="${r.id}"><div class="l">${r.c?`<div class="sc">${esc(r.c)}</div>`:''}<div class="sn">${esc(r.n)}</div></div><div class="sp">${svPrice(r)}</div>${svEdit?'<span class="pe">✎</span>':''}${qt}</div>`;
+}
+const svRng=(a,b,sfx)=>{const x=Math.round(a*100)/100,y=Math.round(b*100)/100;return x==y?fmtN(x)+sfx:fmtN(x)+'–'+fmtN(y)+sfx};
+function svEstCalc(){
+  const items=[],pcts=[];let lo=0,hi=0;
+  S.svc.forEach(r=>{
+    const q=N(S.est[r.id]);if(!q)return;
+    const a=svHas(r.f)?+r.f:svHas(r.t)?+r.t:null,b=svHas(r.t)?+r.t:a;
+    if(r.u=='коэфф%')pcts.push({r,a:a==null?0:a,b:b==null?0:b});else items.push({r,q,a,b});
+  });
+  items.forEach(i=>{if(i.a!=null){lo+=i.a*i.q;hi+=i.b*i.q}});
+  const bl=lo,bh=hi;
+  pcts.forEach(p=>{lo+=bl*p.a/100;hi+=bh*p.b/100});
+  const nm=r=>r.n||r.c||'Услуга',L=[];
+  items.forEach(i=>L.push(i.a==null?`▪ ${nm(i.r)} — ${i.q} ${i.r.u} (цена не указана)`:`▪ ${nm(i.r)} — ${i.q} ${i.r.u} × ${svRng(i.a,i.b,'₽')} = ${svRng(i.a*i.q,i.b*i.q,'₽')}`));
+  pcts.forEach(p=>L.push(`▪ ${nm(p.r)} +${svRng(p.a,p.b,'%')} (+${svRng(bl*p.a/100,bh*p.b/100,'₽')})`));
+  return{n:items.length+pcts.length,lo,hi,L,tot:'Итого: '+svRng(lo,hi,'₽')};
+}
+function svEstRender(){
+  const P=$('#esp');P.hidden=!svEst;if(!svEst)return;
+  const c=svEstCalc();
+  if(!c.n){P.innerHTML='<span class="u">Выберите услуги и укажите количество — здесь появится итог.</span>';return}
+  P.innerHTML=`<div class="et" data-et><span>Смета · позиций: ${c.n} ${svEo?'▴':'▾'}</span><b>${c.tot.replace('Итого: ','')}</b></div>`
+    +(svEo?c.L.map(l=>`<div class="el">${esc(l)}</div>`).join(''):'')
+    +`<div class="ebt"><button class="btn alt" data-ec>Копировать</button><button class="btn" data-eo>Создать заказ</button><button class="btn alt" data-ex>Сбросить</button></div>`;
+}
+function clRender(){
+  const cats=[...new Set(S.svc.map(r=>(r.g||'').trim()).filter(Boolean))];
+  const G=[...cats,''].map(g=>[g,S.svc.filter(r=>(r.g||'').trim()==g&&(r.n||r.c))]).filter(x=>x[1].length);
+  $('#clb').innerHTML=G.map(([g,L])=>(cats.length?`<h2 class="cc">${esc(g||'Без категории')}</h2>`:'')
+    +L.map(r=>`<div class="ci"><div class="l">${r.c?`<div class="sc">${esc(r.c)}</div>`:''}<div class="cn">${esc(r.n)}</div></div><div class="cprice">${svPrice(r)}</div></div>`).join('')).join('')
+    ||'<p class="u">Прейскурант пуст.</p>';
 }
 function svRender(){
-  $('#sve').classList.toggle('on',svEdit);
+  $('#sve').classList.toggle('on',svEdit);$('#svm').classList.toggle('on',svEst);$('#sht').hidden=!svEst;svEstRender();
   $('#sva').hidden=$('#svh').hidden=!svEdit;
   $('#svfo').innerHTML=[['code','По коду'],['alpha','По алфавиту'],['price',svs=='asc'?'Цена ↑':'Цена ↓']]
     .map(([k,t])=>`<button data-k="${k}"${(k=='price'?svs=='asc'||svs=='dsc':svs==k)?' class="on"':''}>${t}</button>`).join('');
@@ -499,16 +656,31 @@ function svRender(){
     const col=!q&&!(svEdit&&L.some(r=>r.id===svOpen))&&S.cgc[g];
     return `<div class="cgw${col?' c':''}"><h2 class="cg ch" data-cg="${esc(g)}">${esc(g||'Без категории')}<span class="ar">▾</span></h2><div class="cgb">${L.map(svItem).join('')}</div></div>`;
   }).join('')
-    ||`<p class="u">${S.svc.length?'Ничего не найдено.':'Прейскурант пуст. Нажмите ⋮, чтобы добавить услуги.'}</p>`;
+    ||`<p class="u">${S.svc.length?'Ничего не найдено.':'Прейскурант пуст. Нажмите ✎, чтобы добавить услуги.'}</p>`;
 }
 const svFocus=()=>{const e=document.querySelector('.se');if(e)e.scrollIntoView({block:'center'});return e};
 $('#svl').oninput=e=>{
+  if(e.target.classList.contains('qn')){
+    const c=e.target.closest('.si'),id=c.dataset.id,q=Math.max(0,N(e.target.value));
+    if(q)S.est[id]=q;else delete S.est[id];
+    save();c.classList.toggle('sel',q>0);svEstRender();return;
+  }
   const w=e.target.closest('.se'),k=e.target.className;
   if(!w||!['g','c','n','u','f','t'].includes(k))return;
   if(k=='g')e.target.style.borderColor='';
   const r=S.svc.find(x=>x.id==w.dataset.id);if(r){r[k]=e.target.value;save()}
 };
 $('#svl').onclick=e=>{
+  const qb=e.target.closest('[data-qm],[data-qp],[data-qt]');
+  if(qb){
+    const c=qb.closest('.si'),id=c.dataset.id,tg=qb.hasAttribute('data-qt');let q=N(S.est[id]);
+    if(tg)q=q?0:1;else if(qb.hasAttribute('data-qm'))q=Math.max(0,Math.round((q-1)*100)/100);else q=Math.round((q+1)*100)/100;
+    if(q)S.est[id]=q;else delete S.est[id];
+    save();const inp=c.querySelector('.qn');if(inp)inp.value=q||'';
+    c.classList.toggle('sel',q>0);
+    if(tg){qb.classList.toggle('on',q>0);qb.textContent=q?'Применено ✓':'Применить'}
+    svEstRender();return;
+  }
   const pk=e.target.closest('[data-pk]');
   if(pk){const r=S.svc.find(x=>x.id==pk.closest('.se').dataset.id);if(r){r.g=pk.dataset.pk;save();svRender()}return}
   const h=e.target.closest('[data-cg]');
@@ -527,7 +699,28 @@ $('#svl').onclick=e=>{
   const c=e.target.closest('.si');
   if(c&&svEdit){svOpen=+c.dataset.id;svClean();svRender();svFocus()}
 };
-$('#sve').onclick=()=>{svEdit=!svEdit;svOpen=null;svClean();save();svRender()};
+$('#sve').onclick=()=>{svEdit=!svEdit;if(svEdit)svEst=false;svOpen=null;svClean();save();svRender()};
+$('#svm').onclick=()=>{svEst=!svEst;if(svEst){svEdit=false;svOpen=null;svClean();save()}svRender()};
+$('#svcl').onclick=()=>{clRender();$('#cl').hidden=false;$('#cl').scrollTop=0;document.body.style.overflow='hidden'};
+const clClose=()=>{$('#cl').hidden=true;document.body.style.overflow=''};
+$('#clx').onclick=clClose;
+document.addEventListener('keydown',e=>{if(e.key=='Escape'&&!$('#cl').hidden&&$('#md').hidden)clClose()});
+$('#esp').onclick=e=>{
+  if(e.target.closest('[data-et]')){svEo=!svEo;svEstRender();return}
+  const c=svEstCalc();
+  if(e.target.closest('[data-ec]')){copyTxt(['Смета',...c.L,'',c.tot].join('\n')).then(()=>toast('Смета скопирована'));return}
+  if(e.target.closest('[data-ex]')){ask({title:'Сбросить смету?',text:'Все количества будут обнулены.',yes:'Сбросить'}).then(v=>{if(v){S.est={};save();svRender()}});return}
+  if(e.target.closest('[data-eo]')){
+    ask({title:'Создать заказ из сметы',text:'Смета: '+svRng(c.lo,c.hi,'₽')+'. Укажите итоговую сумму услуг.',fields:['Сумма услуг, ₽'],vals:[Math.round((c.lo+c.hi)/2)],yes:'Создать'}).then(v=>{
+      if(!v)return;
+      eid=null;oForm();
+      $('#cm').value=['Смета:',...c.L,c.tot].join('\n');fit($('#cm'));$('#sm').value=v[0];
+      S.col.n=0;$('#nw').classList.remove('c');
+      document.querySelector('[data-t=ord]').click();scrollTo({top:0});
+      toast('Укажите адрес и нажмите «Добавить»');
+    });
+  }
+};
 $('#sva').onclick=()=>{
   const cats=[...new Set(S.svc.map(r=>(r.g||'').trim()).filter(Boolean))];
   ask({title:'Новая услуга',text:cats.length?'Выберите категорию из списка или введите новую.':'Введите категорию услуги. Без категории прайс создать нельзя.',choices:cats,fields:[cats.length?'Новая категория':'Категория'],type:'text',yes:'Создать'}).then(v=>{
@@ -545,6 +738,34 @@ $('#svfo').onclick=e=>{
   svRender();
 };
 svRender();
+
+/* ---------- РЕЗЕРВНАЯ КОПИЯ ---------- */
+const bm=t=>{$('#bm').textContent=t};
+function bkInfo(){
+  const old=S.bk?(Date.parse(iso())-Date.parse(S.bk))/864e5:null;
+  $('#bki').textContent=(S.bk?'Последняя копия: '+ru(S.bk):'Копия ещё не сохранялась')+' · заказов: '+S.orders.length+' · услуг: '+S.svc.length+(old==null||old>14?' · ⚠ пора сохранить копию':'');
+}
+const bkTxt=()=>{S.bk=iso();save();bkInfo();return JSON.stringify(S)};
+async function bkApply(t){
+  let d;
+  try{d=JSON.parse(t);if(!d||typeof d!='object'||!('orders' in d||'days' in d||'svc' in d))throw 0}catch(e){bm('Это не похоже на копию данных.');return}
+  if(!await ask({title:'Восстановить данные?',text:'Текущие данные будут заменены данными из копии (заказов: '+(d.orders||[]).length+').',yes:'Восстановить'}))return;
+  try{localStorage.setItem('blk1',JSON.stringify(d))}catch(e){bm('Не удалось записать данные.');return}
+  location.reload();
+}
+$('#bc').onclick=async()=>{await copyTxt(bkTxt());bm('Скопировано. Вставьте текст в заметки или отправьте себе в мессенджер.')};
+$('#bd').onclick=()=>{
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([bkTxt()],{type:'application/json'}));
+  a.download='blocknot-backup-'+iso()+'.json';document.body.appendChild(a);a.click();a.remove();bm('Файл сохранён.');
+};
+$('#br').onclick=async()=>{
+  try{const t=await navigator.clipboard.readText();if(!t.trim()){bm('Буфер обмена пуст.');return}await bkApply(t)}
+  catch(e){$('#bt').hidden=$('#bg').hidden=false;bm('Не удалось прочитать буфер: вставьте копию в поле ниже и нажмите «Восстановить».')}
+};
+$('#bf').onclick=()=>$('#bfi').click();
+$('#bfi').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{await bkApply(await f.text())}catch(x){bm('Не удалось прочитать файл.')}};
+$('#bg').onclick=()=>bkApply($('#bt').value);
+bkInfo();
 
 /* ---------- ВКЛАДКИ ---------- */
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
