@@ -111,7 +111,9 @@ label{font-size:12px;color:var(--mut)}
 <textarea id="pi" rows="6" placeholder="Вставьте отчёт сюда" hidden style="margin-top:8px"></textarea>
 <button class="btn alt" id="pa" hidden>Разобрать</button>
 <p class="u" id="lm" style="margin:8px 0 0;font-size:13px"></p></div>
-<div class="card"><label>Дата</label><input type="date" id="cd"></div>
+<div class="card"><label>Дата</label>
+<div style="display:flex;gap:8px;align-items:stretch"><input type="date" id="cd" style="flex:1 1 0"><button class="btn alt" id="at" style="width:auto;margin:0;padding:8px 12px;font-size:14px;flex:0 0 42%">Отчёт за всё время</button></div>
+<div id="atp" hidden style="margin-top:12px"></div></div>
 <div class="card" data-col="j"><h2 class="ch">Заработано<span class="ar">▾</span></h2><div class="bd"><p class="u" style="margin:-4px 0 10px;font-size:13px">Комиссия офису считается сама: от 5000₽ — 50%, меньше — 60%.</p><div id="jobs"></div><button class="btn alt" data-add="j">+ Заказ</button></div></div>
 <div class="card" data-col="d"><h2 class="ch">Вычеты<span class="ar">▾</span></h2><div class="bd"><div id="deds"></div><button class="btn alt" data-add="d">+ Вычет</button></div></div>
 <div class="card" data-col="s"><h2 class="ch">Траты<span class="ar">▾</span></h2><div class="bd"><div id="sps"></div><button class="btn alt" data-add="s">+ Трата</button></div></div>
@@ -164,6 +166,7 @@ try{const r=JSON.parse(localStorage.getItem('blk1'));if(r)S=Object.assign(S,r)}c
 const save=()=>{try{localStorage.setItem('blk1',JSON.stringify(S))}catch(e){}};
 const money=n=>{n=Math.round(n);return (n<0?'-':'')+Math.abs(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.')+'₽'};
 const sgn=n=>(n<0?'':'+')+money(n);
+const sgz=n=>Math.round(n)==0?money(0):sgn(n);
 /* Диалог подтверждения: возвращает null (отмена) или массив значений полей */
 function ask(o){return new Promise(res=>{
   const m=$('#md'),vals=o.vals||[];
@@ -212,9 +215,9 @@ function calc(){
     w.querySelector('.h').textContent=a?`комиссия ${pc(a)}% · мне ${money(m)}`:'';
   });
   const sm=k=>D[k].reduce((t,r)=>t+N(r.a),0),ded=sm('d'),sp=sm('s'),off=tot-me,pk=me-ded,left=pk-sp;
-  $('#sum').innerHTML=[['Вывод (всего)',sgn(tot)],['Офис','-'+money(off),'#FF0000'],['Мне',sgn(me),'#32CD32'],['Вычеты',sgn(-ded),ded>0&&'#FF7F50'],['Траты',sgn(-sp),sp>0&&'#FF4500']]
+  $('#sum').innerHTML=[['Вывод (всего)',sgz(tot)],['Офис',sgz(-off),'#FF0000'],['Мне',sgz(me),'#32CD32'],['Вычеты',sgz(-ded),ded>0&&'#FF7F50'],['Траты',sgz(-sp),sp>0&&'#FF4500']]
     .map(([a,b,c])=>`<div class="s"><span>${a}</span><b${c?` style="color:${c}"`:''}>${b}</b></div>`).join('')
-    +`<div class="s big"><span>Чистая дневная выручка</span><b class="${left<0?'neg':'pos'}">${sgn(left)}</b></div>`;
+    +`<div class="s big"><span>Чистая дневная выручка</span><b class="${left<0?'neg':'pos'}">${sgz(left)}</b></div>`;
   const HR='━━━━━━━━━━━━━━━',L=[`📅 ${ru(cur)}`,HR,'','💼 ЗАРАБОТАНО'];
   D.j.forEach(r=>{const a=N(r.a);if(!a&&!r.n)return;const c=pc(a);
     L.push(`▪ ${r.n||'заказ'}`,`   ${sgn(a)} → мне ${money(a*(100-c)/100)} · офису ${money(a*c/100)} (${c}%)`)});
@@ -224,9 +227,26 @@ function calc(){
   if(D.s.length){L.push(HR,'','🏠 ТРАТЫ');D.s.forEach(r=>L.push(`▪ ${r.n||'трата'}: -${money(N(r.a))}`))}
   L.push(HR,'',`✅ В КАРМАНЕ ИТОГО СЕГОДНЯ: ${sgn(left)}`);
   $('#rep').value=L.join('\n');
+  atRender();
   save();
 }
 
+function atRender(){
+  const P=$('#atp');if(P.hidden)return;
+  let tot=0,me=0,ded=0,sp=0,n=0;
+  Object.values(S.days).forEach(D=>{
+    if(!(D.j.length||D.d.length||D.s.length))return;n++;
+    D.j.forEach(r=>{const a=N(r.a);tot+=a;me+=a*(100-pc(a))/100});
+    D.d.forEach(r=>ded+=N(r.a));D.s.forEach(r=>sp+=N(r.a));
+  });
+  const off=tot-me,clean=me-ded-sp;
+  P.innerHTML=`<p class="u" style="margin:0 0 6px;font-size:13px">За всё время · дней с записями: ${n}</p>`
+    +`<div class="s"><span>Доход грязными</span><b>${money(tot)}</b></div>`
+    +`<div class="s"><span>Общие траты<br><small class="u">вычеты ${money(ded)} · траты ${money(sp)}</small></span><b>${money(ded+sp)}</b></div>`
+    +`<div class="s"><span>Отдал офису</span><b>${money(off)}</b></div>`
+    +`<div class="s big"><span>Чистая выручка</span><b class="${clean<0?'neg':'pos'}">${money(clean)}</b></div>`;
+}
+$('#at').onclick=()=>{const P=$('#atp');P.hidden=!P.hidden;$('#at').textContent=P.hidden?'Отчёт за всё время':'Скрыть отчёт';atRender()};
 document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{
   const k=b.dataset.add;
   day()[k].push(k=='j'?{n:'',a:''}:{n:'',a:''});
