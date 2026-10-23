@@ -133,6 +133,7 @@ label{font-size:12px;color:var(--mut)}
 .chart svg{display:block}
 .chart .bp{fill:var(--pos)}.chart .bn{fill:var(--neg)}
 .chart rect.sel{stroke:var(--tx);stroke-width:2}
+[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -194,7 +195,9 @@ label{font-size:12px;color:var(--mut)}
 <div class="card"><div class="oh" style="margin:0"><h2 style="margin:0">Прейскурант</h2><span class="hd"><button class="pill" id="svm">Смета</button><button class="pill" id="svcl">Клиенту</button><button class="x pen" id="sve" aria-label="Редактирование">✎</button></span></div>
 <p class="u" id="sht" hidden style="margin:10px 0 0;font-size:13px">Режим сметы: укажите количество у нужных услуг, итог считается внизу.</p>
 <p class="u" id="svh" hidden style="margin:10px 0 0;font-size:13px">Режим редактирования: выберите услугу, чтобы изменить её, или добавьте новую. Чтобы выйти, нажмите ✎ ещё раз.</p>
-<button class="btn" id="sva" hidden>+ Услуга</button></div>
+<button class="btn" id="sva" hidden>+ Услуга</button>
+<div class="mbt" id="svi" hidden style="margin-top:8px"><button class="btn alt" id="svif">Импорт из файла</button><button class="btn alt" id="svib">Импорт из буфера</button></div>
+<input type="file" id="svfi" accept=".csv,text/csv,text/plain" hidden></div>
 <div id="svl"></div>
 <div class="card" id="esp" hidden></div>
 </section>
@@ -643,7 +646,7 @@ function clRender(){
 }
 function svRender(){
   $('#sve').classList.toggle('on',svEdit);$('#svm').classList.toggle('on',svEst);$('#sht').hidden=!svEst;svEstRender();
-  $('#sva').hidden=$('#svh').hidden=!svEdit;
+  $('#sva').hidden=$('#svh').hidden=$('#svi').hidden=!svEdit;
   $('#svfo').innerHTML=[['code','По коду'],['alpha','По алфавиту'],['price',svs=='asc'?'Цена ↑':'Цена ↓']]
     .map(([k,t])=>`<button data-k="${k}"${(k=='price'?svs=='asc'||svs=='dsc':svs==k)?' class="on"':''}>${t}</button>`).join('');
   const cats=[...new Set(S.svc.map(r=>(r.g||'').trim()).filter(Boolean))];
@@ -731,6 +734,62 @@ $('#sva').onclick=()=>{
     const e=svFocus();if(e)e.querySelector('.c').focus();
   });
 };
+/* ---------- ИМПОРТ УСЛУГ ИЗ CSV ---------- */
+const SVCAT=[[/^демонтаж/i,'Демонтажные работы'],[/^монтаж/i,'Монтажные работы'],[/^установка/i,'Установка оборудования'],[/^замена/i,'Замена оборудования'],[/^прокладка/i,'Прокладка кабеля'],[/^диагностик/i,'Диагностические работы']];
+function csvParse(t){
+  const h=t.split('\n')[0],cnt=c=>h.split(c).length-1,d=[',',';','\t'].sort((a,b)=>cnt(b)-cnt(a))[0];
+  const R=[];let row=[],f='',q=false;
+  for(let i=0;i<t.length;i++){
+    const c=t[i];
+    if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}
+    else if(c=='"')q=true;
+    else if(c==d){row.push(f);f=''}
+    else if(c=='\n'||c=='\r'){if(c=='\r'&&t[i+1]=='\n')i++;row.push(f);f='';if(row.some(x=>x.trim()))R.push(row);row=[]}
+    else f+=c;
+  }
+  row.push(f);if(row.some(x=>x.trim()))R.push(row);
+  return R;
+}
+function svFromCsv(t){
+  const R=csvParse(t.replace(/^﻿/,''));if(R.length<2)return[];
+  const H=R[0].map(x=>x.trim().toLowerCase()),ix=re=>H.findIndex(h=>re.test(h));
+  const ci=ix(/^(№|код|номер)/),ni=ix(/наименов|услуг|работ/),ui=ix(/ед/),pi=ix(/цен|стоим/),gi=ix(/категор/);
+  if(ni<0)return[];
+  const num=x=>{const m=x.replace(/\s/g,'').replace(',','.').match(/\d+(?:\.\d+)?/);return m?m[0]:''};
+  const out=[];
+  R.slice(1).forEach((r,k)=>{
+    let n=(r[ni]||'').trim().replace(/\s+/g,' ');if(!n)return;
+    const u0=(ui>=0?r[ui]||'':'').trim().toLowerCase(),ps=pi>=0?r[pi]||'':'';
+    const u=/%|коэф/.test(u0)?'коэфф%':/кв/.test(u0)?'кв.метр':/пог/.test(u0)?'пог.метр':'шт.';
+    const mf=ps.match(/от\s*([\d\s.,]+)/i),mt=ps.match(/до\s*([\d\s.,]+)/i);
+    let f='',tt='';
+    if(mf||mt){f=mf?num(mf[1]):'';tt=mt?num(mt[1]):''}
+    else{f=tt=num(ps);if(!f&&ps.trim())n+=' (цена '+ps.trim().toLowerCase()+')'}
+    let g=gi>=0?(r[gi]||'').trim():'';
+    if(!g){const m=SVCAT.find(x=>x[0].test(n));g=m?m[1]:'Прочее'}
+    out.push({id:Date.now()+k,g,c:ci>=0?(r[ci]||'').trim():'',n,u,f,t:tt});
+  });
+  return out;
+}
+async function svImport(t){
+  const L=svFromCsv(t);
+  if(!L.length){toast('Не нашёл услуг в таблице');return}
+  const key=r=>((r.c||'')+'|'+(r.n||'')).toLowerCase(),have=new Set(S.svc.map(key));
+  const A=L.filter(r=>!have.has(key(r)));
+  if(!A.length){toast('Все эти услуги уже есть в прейскуранте');return}
+  const cats=[...new Set(A.map(r=>r.g))];
+  const v=await ask({title:'Добавить услуги?',text:'Будет добавлено: '+A.length+(L.length>A.length?' (повторы пропущены: '+(L.length-A.length)+')':'')+'. Категории: '+cats.join(', ')+'.',yes:'Добавить'});
+  if(!v)return;
+  A.forEach(r=>S.svc.push(r));save();svRender();toast('Добавлено услуг: '+A.length);
+}
+$('#svif').onclick=()=>$('#svfi').click();
+$('#svfi').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  const buf=await f.arrayBuffer();let t;
+  try{t=new TextDecoder('utf-8',{fatal:true}).decode(buf)}catch(x){t=new TextDecoder('windows-1251').decode(buf)}
+  svImport(t);
+};
+$('#svib').onclick=async()=>{try{svImport(await navigator.clipboard.readText())}catch(e){toast('Не удалось прочитать буфер обмена')}};
 $('#svq').oninput=svRender;
 $('#svfo').onclick=e=>{
   const k=e.target.dataset.k;if(!k)return;
