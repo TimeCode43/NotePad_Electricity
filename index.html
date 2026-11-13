@@ -884,6 +884,7 @@ sec.innerHTML=`<div class="card c" id="cs"></div>
 <div><label>Платёж за жильё, ₽</label><input data-k="goal" type="number" inputmode="decimal"></div>
 <div><label>Срок платежа</label><input data-k="dl" type="date"></div>
 <div class="f"><label>Лимит трат в день, ₽ (необязательно)</label><input data-k="lim" type="number" inputmode="decimal"></div></div></div></div>
+<button class="btn alt" id="cc" style="margin:0 0 4px">Скопировать все траты и доходы</button>
 <div id="clg"></div>`;
 
 function stat(){
@@ -939,6 +940,16 @@ async function del(id){
 }
 sec.querySelector('#co').onclick=()=>add('o');
 sec.querySelector('#ci').onclick=()=>add('i');
+const T0='Скопировать все траты и доходы';
+async function copyAll(){
+ const btn=$('#cc'),L=[...C.log].sort((p,q)=>p.d.localeCompare(q.d)||p.id-q.id),back=()=>setTimeout(()=>{btn.textContent=T0},1600);
+ if(!L.length){btn.textContent='Записей пока нет';back();return}
+ const sm=t=>L.filter(x=>x.t==t).reduce((n,x)=>n+x.a,0);
+ const txt=L.map(x=>ru(x.d)+' | '+(x.n||'без названия')+' | '+(x.t=='o'?'−':'+')+fm(x.a)).join('\n')+'\n\nРасходы: '+fm(sm('o'))+'\nДоходы: '+fm(sm('i'))+'\n\nОстаток на '+ru(iso())+' ('+new Date().toTimeString().slice(0,5)+'):\n💵 Наличные: '+fm(N(C.cash))+'\n💳 Карта: '+fm(N(C.card))+'\nВсего: '+fm(N(C.cash)+N(C.card));
+ try{await navigator.clipboard.writeText(txt)}catch(e){const t=document.createElement('textarea');t.value=txt;document.body.appendChild(t);t.select();try{document.execCommand('copy')}catch(_){}t.remove()}
+ btn.textContent='Скопировано ✓';back();
+}
+sec.querySelector('#cc').onclick=copyAll;
 sec.querySelector('#ccn').onclick=endEdit;
 sec.addEventListener('input',e=>{const k=e.target.dataset.k;if(k){C[k]=e.target.value;sv();render()}});
 sec.addEventListener('click',e=>{
