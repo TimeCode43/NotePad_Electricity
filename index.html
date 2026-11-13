@@ -874,10 +874,10 @@ document.head.appendChild(st);
 
 const sec=document.createElement('section');sec.id='calc';
 sec.innerHTML=`<div class="card c" id="cs"></div>
-<div class="card"><h2 style="margin:0 0 8px">Новая операция</h2>
+<div class="card"><h2 style="margin:0 0 8px" id="chd">Новая операция</h2>
 <input id="cn" list="kdl" placeholder="На что (еда, проезд…)"><datalist id="kdl"></datalist>
 <div class="cw" style="margin-top:8px"><input id="ca" type="number" inputmode="decimal" placeholder="Сумма ₽"><select id="cx"><option value="cash">💵 Наличные</option><option value="card">💳 Карта</option></select>
-<button class="btn no" id="co">− Трата</button><button class="btn" id="ci">+ Доход</button></div></div>
+<div class="f"><label>Дата операции</label><input id="cdate" type="date"></div><label class="f" style="display:flex;gap:8px;align-items:center;font-size:13px;color:var(--tx)"><input type="checkbox" id="cbal" checked style="width:auto;margin:0"> менять остаток кошелька</label><button class="btn no" id="co">− Трата</button><button class="btn" id="ci">+ Доход</button><button class="btn alt f" id="ccn" hidden>Отмена</button></div></div>
 <div class="card" id="cf"><h2 class="ch">Кошелёк и цель<span class="ar">▾</span></h2><div class="bd"><div class="cw">
 <div><label>Наличные, ₽</label><input data-k="cash" type="number" inputmode="decimal"></div>
 <div><label>Карта, ₽</label><input data-k="card" type="number" inputmode="decimal"></div>
@@ -903,35 +903,49 @@ function stat(){
 function logR(){
  const g={};[...C.log].sort((a,b)=>b.id-a.id).forEach(x=>(g[x.d]=g[x.d]||[]).push(x));
  $('#clg').innerHTML=Object.keys(g).sort().reverse().map(d=>{const a=g[d],s=a.filter(x=>x.t=='o').reduce((n,x)=>n+x.a,0);
-  return `<div class="cd"><span>${ru(d)}${d==iso()?' · сегодня':''}</span><span>${s?'потрачено '+fm(s):''}</span></div><div class="card" style="padding:4px 12px">`
-  +a.map(x=>`<div class="kl"><div class="n">${esc(x.n)||'без названия'}<div class="u" style="font-size:12px">${x.s=='cash'?'💵 наличные':'💳 карта'}</div></div><span style="white-space:nowrap"><b style="color:var(--${x.t=='o'?'neg':'pos'})">${x.t=='o'?'−':'+'}${fm(x.a)}</b><button class="x" data-del="${x.id}">×</button></span></div>`).join('')+'</div>'}).join('')
+  return `<div class="cd"><span>${ru(d)}${d==iso()?' · сегодня':''}</span><span>${s?'потрачено '+fm(s)+' ':''}<button class="x" data-adday="${d}" style="font-size:18px;color:var(--ac);padding:0 0 0 8px" aria-label="Добавить в этот день">＋</button></span></div><div class="card" style="padding:4px 12px">`
+  +a.map(x=>`<div class="kl"><div class="n">${esc(x.n)||'без названия'}<div class="u" style="font-size:12px">${x.s=='cash'?'💵 наличные':'💳 карта'}${x.b===0?' · остаток не менялся':''}</div></div><span style="white-space:nowrap"><b style="color:var(--${x.t=='o'?'neg':'pos'})">${x.t=='o'?'−':'+'}${fm(x.a)}</b><button class="x" style="color:var(--ac);font-size:18px" data-ed="${x.id}">✎</button><button class="x" data-del="${x.id}">×</button></span></div>`).join('')+'</div>'}).join('')
   ||'<p class="u">Операций пока нет.</p>';
  $('#kdl').innerHTML=[...new Set(C.log.map(x=>x.n).filter(Boolean))].map(n=>`<option value="${esc(n)}">`).join('');
 }
 const render=()=>{stat();logR()};
 const fields=()=>document.querySelectorAll('#calc [data-k]').forEach(i=>{i.value=C[i.dataset.k]==null?'':C[i.dataset.k]});
 
+let ed=null;
+const BT=['− Трата','+ Доход'],eff=x=>x.b!==0?(x.t=='o'?-x.a:x.a):0;
+function endEdit(){ed=null;$('#chd').textContent='Новая операция';$('#ccn').hidden=true;$('#co').textContent=BT[0];$('#ci').textContent=BT[1];$('#ca').value='';$('#cn').value='';$('#cbal').checked=true}
+function startEdit(id){
+ const x=C.log.find(y=>y.id==id);if(!x)return;ed=id;
+ $('#cn').value=x.n;$('#ca').value=x.a;$('#cx').value=x.s;$('#cdate').value=x.d;$('#cbal').checked=x.b!==0;
+ $('#chd').textContent='Редактирование записи';$('#ccn').hidden=false;$('#co').textContent='✓ Сохранить как трату';$('#ci').textContent='✓ Сохранить как доход';
+ $('#cn').scrollIntoView({block:'center',behavior:'smooth'});
+}
 function add(t){
  const a=N($('#ca').value);if(a<=0){$('#ca').focus();return}
- const s=$('#cx').value;
- C[s]=String(R2(N(C[s])+(t=='o'?-a:a)));
- C.log.push({id:Date.now(),d:iso(),n:$('#cn').value.trim(),a,s,t});
- $('#ca').value='';$('#cn').value='';fields();sv();render();$('#cn').focus();
+ const e={d:$('#cdate').value||iso(),n:$('#cn').value.trim(),a,s:$('#cx').value,t,b:$('#cbal').checked?1:0};
+ if(ed){const x=C.log.find(y=>y.id==ed);if(x){C[x.s]=String(R2(N(C[x.s])-eff(x)));Object.assign(x,e)}}
+ else C.log.push(Object.assign({id:Date.now()},e));
+ C[e.s]=String(R2(N(C[e.s])+eff(e)));
+ const was=ed;endEdit();if(was)$('#cdate').value=iso();
+ fields();sv();render();if(!was)$('#cn').focus();
 }
 async function del(id){
  const x=C.log.find(y=>y.id==id);if(!x)return;
- const q={title:'Удалить запись?',text:(x.n||'без названия')+' · '+fm(x.a)+'. Баланс будет пересчитан.',yes:'Удалить'};
+ const q={title:'Удалить запись?',text:(x.n||'без названия')+' · '+fm(x.a)+(x.b!==0?'. Баланс будет пересчитан.':'.'),yes:'Удалить'};
  const ok=typeof ask=='function'?await ask(q):confirm(q.title);
  if(!ok)return;
- C[x.s]=String(R2(N(C[x.s])+(x.t=='o'?x.a:-x.a)));
- C.log=C.log.filter(y=>y.id!=id);fields();sv();render();
+ C[x.s]=String(R2(N(C[x.s])-eff(x)));
+ C.log=C.log.filter(y=>y.id!=id);if(ed==id)endEdit();fields();sv();render();
 }
 sec.querySelector('#co').onclick=()=>add('o');
 sec.querySelector('#ci').onclick=()=>add('i');
+sec.querySelector('#ccn').onclick=endEdit;
 sec.addEventListener('input',e=>{const k=e.target.dataset.k;if(k){C[k]=e.target.value;sv();render()}});
 sec.addEventListener('click',e=>{
  if(e.target.closest('#cdt')){const c=$('#cs');c.classList.toggle('c');C.dt=c.classList.contains('c')?0:1;sv();return}
  if(e.target.closest('#cf .ch')){const c=$('#cf');c.classList.toggle('c');C.fc=c.classList.contains('c')?1:0;sv();return}
+ const g=e.target.closest('[data-ed]');if(g){startEdit(g.dataset.ed);return}
+ const ad=e.target.closest('[data-adday]');if(ad){endEdit();$('#cdate').value=ad.dataset.adday;$('#cn').focus();$('#cn').scrollIntoView({block:'center',behavior:'smooth'});return}
  const d=e.target.closest('[data-del]');if(d)del(d.dataset.del);
 });
 
@@ -951,7 +965,7 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)render()})
 
 if(C.dt)$('#cs').classList.remove('c');
 if(C.fc)$('#cf').classList.add('c');
-fields();render();
+$('#cdate').value=iso();fields();render();
 })()}catch(e){const d=document.querySelector('#day');if(d)d.hidden=false;console.error(e)}
 </script>
 </body>
